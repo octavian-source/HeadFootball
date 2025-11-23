@@ -75,36 +75,61 @@ class MenuScene extends Phaser.Scene {
             strokeThickness: 8
         }).setOrigin(0.5);
 
-        // Create buttons with proper interactive areas
-        this.createButton(600, 280, 350, 70, 0x4CAF50, 'PLAYER vs PLAYER', () => {
-            console.log('Starting PvP mode');
-            this.scene.start('GameScene', { mode: 'pvp' });
+        // Subtitle - FIRST 2v2 Mode!
+        this.add.text(600, 180, '⚡ NOW WITH 2v2 MODE! ⚡', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#ffff00',
+            stroke: '#ff0000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        // Create main menu buttons
+        this.createButton(600, 280, 350, 70, 0x4CAF50, '1v1 MODE', () => {
+            console.log('Opening 1v1 mode selection');
+            this.scene.start('Mode1v1Scene');
         });
 
-        this.createButton(600, 370, 350, 70, 0x2196F3, 'PLAYER vs BOT', () => {
-            console.log('Opening difficulty selection');
-            this.scene.start('DifficultyScene');
+        this.createButton(600, 370, 350, 70, 0xFF6B00, '2v2 MODE', () => {
+            console.log('Opening 2v2 mode selection');
+            this.scene.start('Mode2v2Scene');
         });
 
         // Controls info
-        this.add.text(600, 480, 'Player 1: WASD + Space (kick)', {
-            fontSize: '18px',
-            fontFamily: 'Arial',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5);
-
-        this.add.text(600, 510, 'Player 2: Arrow Keys + Shift (kick)', {
-            fontSize: '18px',
-            fontFamily: 'Arial',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5);
-
-        this.add.text(600, 550, 'ESC: Pause Game', {
+        this.add.text(600, 460, '1v1 Controls:', {
             fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        this.add.text(600, 490, 'P1: WASD + Space | P2: Arrows + Shift', {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5);
+
+        this.add.text(600, 520, '2v2 Controls:', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        this.add.text(600, 550, 'P3: TFGH + R | P4: IJKL + U', {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5);
+
+        this.add.text(600, 590, 'ESC: Pause Game', {
+            fontSize: '18px',
             fontFamily: 'Arial',
             color: '#ffff00',
             stroke: '#000000',
@@ -127,6 +152,306 @@ class MenuScene extends Phaser.Scene {
                 (color >> 16) & 0xFF,
                 ((color >> 8) & 0xFF) + 30,
                 (color & 0xFF) + 30,
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
+// ==================== 1v1 MODE SCENE ====================
+class Mode1v1Scene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'Mode1v1Scene' });
+    }
+
+    create() {
+        // Sky background
+        this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
+
+        // Title
+        this.add.text(600, 120, '1v1 MODE', {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        // Mode buttons
+        this.createButton(600, 280, 350, 70, 0x4CAF50, 'PLAYER vs PLAYER', () => {
+            console.log('Starting PvP mode');
+            this.scene.start('GameScene', { mode: 'pvp' });
+        });
+
+        this.createButton(600, 370, 350, 70, 0x2196F3, 'PLAYER vs BOT', () => {
+            console.log('Opening difficulty selection');
+            this.scene.start('DifficultyScene');
+        });
+
+        // Back button
+        this.createButton(600, 480, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('MenuScene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
+// ==================== 2v2 MODE SCENE ====================
+class Mode2v2Scene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'Mode2v2Scene' });
+    }
+
+    create() {
+        // Sky background
+        this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
+
+        // Title
+        this.add.text(600, 100, '2v2 MODE', {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        // Team Info
+        this.add.text(600, 160, 'Team 1: Red + Green | Team 2: Blue + Yellow', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        // Mode buttons
+        this.createButton(600, 250, 350, 60, 0x4CAF50, '4 PLAYERS', () => {
+            console.log('Starting 2v2 with 4 human players');
+            this.scene.start('GameScene', { mode: '2v2', subMode: '4players' });
+        });
+
+        this.createButton(600, 330, 350, 60, 0x2196F3, '2v2 WITH BOTS', () => {
+            console.log('Opening bot difficulty for 2v2');
+            this.scene.start('Difficulty2v2Scene');
+        });
+
+        this.createButton(600, 410, 350, 60, 0xf44336, '1 vs 2 BOTS', () => {
+            console.log('Opening hardcore mode difficulty');
+            this.scene.start('DifficultyHardcoreScene');
+        });
+
+        // Back button
+        this.createButton(600, 510, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('MenuScene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
+// ==================== DIFFICULTY 2v2 SCENE ====================
+class Difficulty2v2Scene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'Difficulty2v2Scene' });
+    }
+
+    create() {
+        // Background
+        this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
+
+        // Title
+        this.add.text(600, 120, '2v2 WITH BOTS', {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        this.add.text(600, 180, 'Select Bot Difficulty', {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        // Difficulty buttons
+        this.createButton(600, 280, 300, 60, 0x4CAF50, 'EASY', () => {
+            console.log('Starting 2v2 with bots - Easy');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'bots', difficulty: 'easy' });
+        });
+
+        this.createButton(600, 360, 300, 60, 0xFF9800, 'MEDIUM', () => {
+            console.log('Starting 2v2 with bots - Medium');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'bots', difficulty: 'medium' });
+        });
+
+        this.createButton(600, 440, 300, 60, 0xf44336, 'HARD', () => {
+            console.log('Starting 2v2 with bots - Hard');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'bots', difficulty: 'hard' });
+        });
+
+        // Back button
+        this.createButton(600, 530, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('Mode2v2Scene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
+// ==================== DIFFICULTY HARDCORE SCENE ====================
+class DifficultyHardcoreScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'DifficultyHardcoreScene' });
+    }
+
+    create() {
+        // Background
+        this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
+
+        // Title
+        this.add.text(600, 120, '1 vs 2 BOTS', {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ff0000',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        this.add.text(600, 180, 'HARDCORE MODE - Select Difficulty', {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffff00',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        // Difficulty buttons
+        this.createButton(600, 280, 300, 60, 0x4CAF50, 'EASY', () => {
+            console.log('Starting 1v2 hardcore - Easy');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'hardcore', difficulty: 'easy' });
+        });
+
+        this.createButton(600, 360, 300, 60, 0xFF9800, 'MEDIUM', () => {
+            console.log('Starting 1v2 hardcore - Medium');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'hardcore', difficulty: 'medium' });
+        });
+
+        this.createButton(600, 440, 300, 60, 0xf44336, 'HARD', () => {
+            console.log('Starting 1v2 hardcore - Hard');
+            this.scene.start('GameScene', { mode: '2v2', subMode: 'hardcore', difficulty: 'hard' });
+        });
+
+        // Back button
+        this.createButton(600, 530, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('Mode2v2Scene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
                 255
             ));
         });
@@ -343,13 +668,22 @@ class GameScene extends Phaser.Scene {
 
     init(data) {
         this.gameMode = data.mode || 'pvp';
+        this.subMode = data.subMode || '';  // 4players, bots, hardcore
         this.difficulty = data.difficulty || 'medium';
         this.aiConfig = AI_CONFIG[this.difficulty];
         this.aiTimer = 0;
-        // Initialize kick animation states
+        // Initialize kick animation states for all players
         this.player1Kicking = false;
         this.player2Kicking = false;
-        console.log(`Game initialized: mode=${this.gameMode}, difficulty=${this.difficulty}`);
+        this.player3Kicking = false;
+        this.player4Kicking = false;
+        // AI timers for bots
+        this.aiTimers = {
+            player2: 0,
+            player3: 0,
+            player4: 0
+        };
+        console.log(`Game initialized: mode=${this.gameMode}, subMode=${this.subMode}, difficulty=${this.difficulty}`);
     }
 
     preload() {
@@ -363,8 +697,8 @@ class GameScene extends Phaser.Scene {
         console.log('GameScene create() started');
 
         // Initialize game state
-        this.score1 = 0;
-        this.score2 = 0;
+        this.score1 = 0;  // Team 1 score for 2v2
+        this.score2 = 0;  // Team 2 score for 2v2
         this.goalScored = false;
         this.matchTime = MATCH_TIME;
         this.matchEnded = false;
@@ -383,7 +717,7 @@ class GameScene extends Phaser.Scene {
     }
 
     createTextures() {
-        // Create player texture (red circle for head, lines for body)
+        // Create player 1 texture (RED - Team 1)
         if (!this.textures.exists('player1')) {
             const graphics = this.make.graphics({ x: 0, y: 0 }, false);
             graphics.fillStyle(0xff0000, 1);
@@ -394,7 +728,7 @@ class GameScene extends Phaser.Scene {
             graphics.destroy();
         }
 
-        // Create player 2 texture
+        // Create player 2 texture (BLUE - Team 2)
         if (!this.textures.exists('player2')) {
             const graphics = this.make.graphics({ x: 0, y: 0 }, false);
             graphics.fillStyle(0x0000ff, 1);
@@ -402,6 +736,28 @@ class GameScene extends Phaser.Scene {
             graphics.lineStyle(4, 0x0000ff);
             graphics.strokeCircle(20, 20, 20);
             graphics.generateTexture('player2', 40, 40);
+            graphics.destroy();
+        }
+
+        // Create player 3 texture (GREEN - Team 1)
+        if (!this.textures.exists('player3')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0x00ff00, 1);
+            graphics.fillCircle(20, 20, 20);
+            graphics.lineStyle(4, 0x00ff00);
+            graphics.strokeCircle(20, 20, 20);
+            graphics.generateTexture('player3', 40, 40);
+            graphics.destroy();
+        }
+
+        // Create player 4 texture (YELLOW - Team 2)
+        if (!this.textures.exists('player4')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0xffff00, 1);
+            graphics.fillCircle(20, 20, 20);
+            graphics.lineStyle(4, 0xffff00);
+            graphics.strokeCircle(20, 20, 20);
+            graphics.generateTexture('player4', 40, 40);
             graphics.destroy();
         }
 
@@ -512,47 +868,146 @@ class GameScene extends Phaser.Scene {
     }
 
     createPlayers() {
-        // Player 1 (Red - left side)
-        this.player1 = this.physics.add.sprite(200, 450, 'player1');
-        this.player1.setBounce(0.2);
-        this.player1.setCollideWorldBounds(true);
-        this.player1.setScale(1.5);
+        if (this.gameMode === '2v2') {
+            // 2v2 MODE - Create 4 players
+            // Team 1 (Left side)
+            // Player 1 (Red)
+            this.player1 = this.physics.add.sprite(150, 420, 'player1');
+            this.player1.setBounce(0.2);
+            this.player1.setCollideWorldBounds(true);
+            this.player1.setScale(1.5);
+            this.player1.team = 1;
+            this.player1.role = 'attacker';  // For bot AI
 
-        // Player 1 leg (for kicking animation)
-        this.player1Leg = this.add.rectangle(200, 470, 4, 25, 0xff0000);
-        this.player1Leg.setOrigin(0.5, 0);
-        this.player1LegFoot = this.physics.add.sprite(200, 495, null);
-        this.player1LegFoot.setSize(10, 10);
-        this.player1LegFoot.body.allowGravity = false;
-        this.player1LegFoot.setVisible(false);
+            // Player 1 leg
+            this.player1Leg = this.add.rectangle(150, 440, 4, 25, 0xff0000);
+            this.player1Leg.setOrigin(0.5, 0);
+            this.player1LegFoot = this.physics.add.sprite(150, 465, null);
+            this.player1LegFoot.setSize(10, 10);
+            this.player1LegFoot.body.allowGravity = false;
+            this.player1LegFoot.setVisible(false);
 
-        // Player 2 / Bot (Blue - right side)
-        this.player2 = this.physics.add.sprite(1000, 450, 'player2');
-        this.player2.setBounce(0.2);
-        this.player2.setCollideWorldBounds(true);
-        this.player2.setScale(1.5);
+            // Player 3 (Green)
+            this.player3 = this.physics.add.sprite(250, 480, 'player3');
+            this.player3.setBounce(0.2);
+            this.player3.setCollideWorldBounds(true);
+            this.player3.setScale(1.5);
+            this.player3.team = 1;
+            this.player3.role = 'defender';  // For bot AI
 
-        // Player 2 leg (for kicking animation)
-        this.player2Leg = this.add.rectangle(1000, 470, 4, 25, 0x0000ff);
-        this.player2Leg.setOrigin(0.5, 0);
-        this.player2LegFoot = this.physics.add.sprite(1000, 495, null);
-        this.player2LegFoot.setSize(10, 10);
-        this.player2LegFoot.body.allowGravity = false;
-        this.player2LegFoot.setVisible(false);
+            // Player 3 leg
+            this.player3Leg = this.add.rectangle(250, 500, 4, 25, 0x00ff00);
+            this.player3Leg.setOrigin(0.5, 0);
+            this.player3LegFoot = this.physics.add.sprite(250, 525, null);
+            this.player3LegFoot.setSize(10, 10);
+            this.player3LegFoot.body.allowGravity = false;
+            this.player3LegFoot.setVisible(false);
 
-        // Add name labels
-        this.add.text(200, 400, 'P1', {
-            fontSize: '16px',
-            fontFamily: 'Arial',
-            color: '#ff0000'
-        }).setOrigin(0.5);
+            // Team 2 (Right side)
+            // Player 2 (Blue)
+            this.player2 = this.physics.add.sprite(1050, 420, 'player2');
+            this.player2.setBounce(0.2);
+            this.player2.setCollideWorldBounds(true);
+            this.player2.setScale(1.5);
+            this.player2.team = 2;
+            this.player2.role = 'attacker';  // For bot AI
 
-        const p2Label = this.gameMode === 'bot' ? 'BOT' : 'P2';
-        this.add.text(1000, 400, p2Label, {
-            fontSize: '16px',
-            fontFamily: 'Arial',
-            color: '#0000ff'
-        }).setOrigin(0.5);
+            // Player 2 leg
+            this.player2Leg = this.add.rectangle(1050, 440, 4, 25, 0x0000ff);
+            this.player2Leg.setOrigin(0.5, 0);
+            this.player2LegFoot = this.physics.add.sprite(1050, 465, null);
+            this.player2LegFoot.setSize(10, 10);
+            this.player2LegFoot.body.allowGravity = false;
+            this.player2LegFoot.setVisible(false);
+
+            // Player 4 (Yellow)
+            this.player4 = this.physics.add.sprite(950, 480, 'player4');
+            this.player4.setBounce(0.2);
+            this.player4.setCollideWorldBounds(true);
+            this.player4.setScale(1.5);
+            this.player4.team = 2;
+            this.player4.role = 'defender';  // For bot AI
+
+            // Player 4 leg
+            this.player4Leg = this.add.rectangle(950, 500, 4, 25, 0xffff00);
+            this.player4Leg.setOrigin(0.5, 0);
+            this.player4LegFoot = this.physics.add.sprite(950, 525, null);
+            this.player4LegFoot.setSize(10, 10);
+            this.player4LegFoot.body.allowGravity = false;
+            this.player4LegFoot.setVisible(false);
+
+            // Add labels for 2v2
+            this.add.text(150, 380, 'P1', {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ff0000'
+            }).setOrigin(0.5);
+
+            const p2Label = this.subMode === '4players' ? 'P2' : 'BOT';
+            this.add.text(1050, 380, p2Label, {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#0000ff'
+            }).setOrigin(0.5);
+
+            const p3Label = (this.subMode === '4players' || this.subMode === 'hardcore') ? 'P3' : 'BOT';
+            this.add.text(250, 440, p3Label, {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#00ff00'
+            }).setOrigin(0.5);
+
+            const p4Label = this.subMode === '4players' ? 'P4' : 'BOT';
+            this.add.text(950, 440, p4Label, {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ffff00'
+            }).setOrigin(0.5);
+
+        } else {
+            // 1v1 MODE - Original setup
+            // Player 1 (Red - left side)
+            this.player1 = this.physics.add.sprite(200, 450, 'player1');
+            this.player1.setBounce(0.2);
+            this.player1.setCollideWorldBounds(true);
+            this.player1.setScale(1.5);
+
+            // Player 1 leg (for kicking animation)
+            this.player1Leg = this.add.rectangle(200, 470, 4, 25, 0xff0000);
+            this.player1Leg.setOrigin(0.5, 0);
+            this.player1LegFoot = this.physics.add.sprite(200, 495, null);
+            this.player1LegFoot.setSize(10, 10);
+            this.player1LegFoot.body.allowGravity = false;
+            this.player1LegFoot.setVisible(false);
+
+            // Player 2 / Bot (Blue - right side)
+            this.player2 = this.physics.add.sprite(1000, 450, 'player2');
+            this.player2.setBounce(0.2);
+            this.player2.setCollideWorldBounds(true);
+            this.player2.setScale(1.5);
+
+            // Player 2 leg (for kicking animation)
+            this.player2Leg = this.add.rectangle(1000, 470, 4, 25, 0x0000ff);
+            this.player2Leg.setOrigin(0.5, 0);
+            this.player2LegFoot = this.physics.add.sprite(1000, 495, null);
+            this.player2LegFoot.setSize(10, 10);
+            this.player2LegFoot.body.allowGravity = false;
+            this.player2LegFoot.setVisible(false);
+
+            // Add name labels
+            this.add.text(200, 400, 'P1', {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ff0000'
+            }).setOrigin(0.5);
+
+            const p2Label = this.gameMode === 'bot' ? 'BOT' : 'P2';
+            this.add.text(1000, 400, p2Label, {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#0000ff'
+            }).setOrigin(0.5);
+        }
     }
 
     createBall() {
@@ -564,6 +1019,25 @@ class GameScene extends Phaser.Scene {
     }
 
     createUI() {
+        if (this.gameMode === '2v2') {
+            // Team labels
+            this.add.text(450, 30, 'TEAM 1', {
+                fontSize: '20px',
+                fontFamily: 'Arial Black',
+                color: '#ffffff',
+                stroke: '#ff0000',
+                strokeThickness: 3
+            }).setOrigin(1, 0.5);
+
+            this.add.text(750, 30, 'TEAM 2', {
+                fontSize: '20px',
+                fontFamily: 'Arial Black',
+                color: '#ffffff',
+                stroke: '#0000ff',
+                strokeThickness: 3
+            }).setOrigin(0, 0.5);
+        }
+
         // Score display
         this.scoreText1 = this.add.text(500, 50, '0', {
             fontSize: '48px',
@@ -597,7 +1071,19 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Mode indicator
-        const modeText = this.gameMode === 'bot' ? `vs BOT (${this.difficulty.toUpperCase()})` : 'Player vs Player';
+        let modeText = '';
+        if (this.gameMode === '2v2') {
+            if (this.subMode === '4players') {
+                modeText = '2v2 - 4 Players';
+            } else if (this.subMode === 'bots') {
+                modeText = `2v2 with Bots (${this.difficulty.toUpperCase()})`;
+            } else if (this.subMode === 'hardcore') {
+                modeText = `1 vs 2 Bots (${this.difficulty.toUpperCase()})`;
+            }
+        } else {
+            modeText = this.gameMode === 'bot' ? `vs BOT (${this.difficulty.toUpperCase()})` : 'Player vs Player';
+        }
+
         this.add.text(600, 100, modeText, {
             fontSize: '18px',
             fontFamily: 'Arial',
@@ -606,21 +1092,63 @@ class GameScene extends Phaser.Scene {
             strokeThickness: 2
         }).setOrigin(0.5);
 
-        // Controls reminder
-        this.add.text(10, 10, 'P1: WASD + Space', {
-            fontSize: '14px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 2
-        });
+        // Controls reminder based on mode
+        if (this.gameMode === '2v2') {
+            // 2v2 controls
+            this.add.text(10, 10, 'P1: WASD+Space', {
+                fontSize: '12px',
+                color: '#ff0000',
+                stroke: '#000000',
+                strokeThickness: 2
+            });
 
-        if (this.gameMode === 'pvp') {
-            this.add.text(1190, 10, 'P2: Arrows + Shift', {
+            if (this.subMode === '4players') {
+                this.add.text(10, 30, 'P3: TFGH+R', {
+                    fontSize: '12px',
+                    color: '#00ff00',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                });
+
+                this.add.text(1190, 10, 'P2: Arrows+Shift', {
+                    fontSize: '12px',
+                    color: '#0000ff',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }).setOrigin(1, 0);
+
+                this.add.text(1190, 30, 'P4: IJKL+U', {
+                    fontSize: '12px',
+                    color: '#ffff00',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }).setOrigin(1, 0);
+            } else if (this.subMode === 'hardcore') {
+                // Only P1 and P3 are human in hardcore mode
+                this.add.text(10, 30, 'P3: TFGH+R', {
+                    fontSize: '12px',
+                    color: '#00ff00',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                });
+            }
+        } else {
+            // 1v1 controls
+            this.add.text(10, 10, 'P1: WASD + Space', {
                 fontSize: '14px',
                 color: '#ffffff',
                 stroke: '#000000',
                 strokeThickness: 2
-            }).setOrigin(1, 0);
+            });
+
+            if (this.gameMode === 'pvp') {
+                this.add.text(1190, 10, 'P2: Arrows + Shift', {
+                    fontSize: '14px',
+                    color: '#ffffff',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }).setOrigin(1, 0);
+            }
         }
 
         this.add.text(600, 630, 'ESC: Pause', {
@@ -632,7 +1160,7 @@ class GameScene extends Phaser.Scene {
     }
 
     setupControls() {
-        // Player 1 controls
+        // Player 1 controls (WASD + Space)
         this.keys1 = {
             left: this.input.keyboard.addKey('A'),
             right: this.input.keyboard.addKey('D'),
@@ -640,13 +1168,31 @@ class GameScene extends Phaser.Scene {
             kick: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         };
 
-        // Player 2 controls (for PvP mode)
+        // Player 2 controls (Arrow Keys + Shift)
         this.keys2 = {
             left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
             up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
             kick: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT)
         };
+
+        // Player 3 controls (TFGH + R) - for 2v2 mode
+        if (this.gameMode === '2v2') {
+            this.keys3 = {
+                left: this.input.keyboard.addKey('F'),
+                right: this.input.keyboard.addKey('H'),
+                up: this.input.keyboard.addKey('T'),
+                kick: this.input.keyboard.addKey('R')
+            };
+
+            // Player 4 controls (IJKL + U) - for 2v2 mode
+            this.keys4 = {
+                left: this.input.keyboard.addKey('J'),
+                right: this.input.keyboard.addKey('L'),
+                up: this.input.keyboard.addKey('I'),
+                kick: this.input.keyboard.addKey('U')
+            };
+        }
 
         // Pause control
         this.input.keyboard.on('keydown-ESC', () => {
@@ -667,23 +1213,19 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.ball, this.leftGoalCrossbar);
         this.physics.add.collider(this.ball, this.rightGoalCrossbar);
 
-        // Player collisions
+        // Player-ground collisions
         this.physics.add.collider(this.player1, this.ground);
         this.physics.add.collider(this.player2, this.ground);
+
+        // Player-wall collisions
         this.physics.add.collider(this.player1, this.leftWall);
         this.physics.add.collider(this.player1, this.rightWall);
         this.physics.add.collider(this.player2, this.leftWall);
         this.physics.add.collider(this.player2, this.rightWall);
-        this.physics.add.collider(this.player1, this.player2, () => {
-            // When players collide with ball between them, bounce ball away
-            const ballDist1 = Phaser.Math.Distance.Between(this.player1.x, this.player1.y, this.ball.x, this.ball.y);
-            const ballDist2 = Phaser.Math.Distance.Between(this.player2.x, this.player2.y, this.ball.x, this.ball.y);
 
-            if (ballDist1 < 100 && ballDist2 < 100) {
-                // Ball is between players - bounce it up
-                this.ball.body.velocity.y = -400;
-                this.ball.body.velocity.x = Phaser.Math.Between(-200, 200);
-            }
+        // Player-player collisions
+        this.physics.add.collider(this.player1, this.player2, () => {
+            this.handlePlayerCollision(this.player1, this.player2);
         });
 
         // Ball-player collisions
@@ -708,18 +1250,82 @@ class GameScene extends Phaser.Scene {
             }
         });
 
-        // Goal detection
+        // 2v2 mode additional collisions
+        if (this.gameMode === '2v2') {
+            // Player 3 collisions
+            this.physics.add.collider(this.player3, this.ground);
+            this.physics.add.collider(this.player3, this.leftWall);
+            this.physics.add.collider(this.player3, this.rightWall);
+
+            // Player 4 collisions
+            this.physics.add.collider(this.player4, this.ground);
+            this.physics.add.collider(this.player4, this.leftWall);
+            this.physics.add.collider(this.player4, this.rightWall);
+
+            // Inter-player collisions for 2v2
+            this.physics.add.collider(this.player1, this.player3, () => {
+                this.handlePlayerCollision(this.player1, this.player3);
+            });
+            this.physics.add.collider(this.player1, this.player4, () => {
+                this.handlePlayerCollision(this.player1, this.player4);
+            });
+            this.physics.add.collider(this.player2, this.player3, () => {
+                this.handlePlayerCollision(this.player2, this.player3);
+            });
+            this.physics.add.collider(this.player2, this.player4, () => {
+                this.handlePlayerCollision(this.player2, this.player4);
+            });
+            this.physics.add.collider(this.player3, this.player4, () => {
+                this.handlePlayerCollision(this.player3, this.player4);
+            });
+
+            // Ball-player collisions for players 3 and 4
+            this.physics.add.collider(this.ball, this.player3, () => {
+                this.handleBallHit(this.player3);
+            });
+
+            this.physics.add.collider(this.ball, this.player4, () => {
+                this.handleBallHit(this.player4);
+            });
+
+            // Ball-leg foot collisions for players 3 and 4
+            this.physics.add.overlap(this.ball, this.player3LegFoot, () => {
+                if (this.player3Kicking) {
+                    this.performKick(this.player3, true);
+                }
+            });
+
+            this.physics.add.overlap(this.ball, this.player4LegFoot, () => {
+                if (this.player4Kicking) {
+                    this.performKick(this.player4, true);
+                }
+            });
+        }
+
+        // Goal detection - Team scoring for 2v2
         this.physics.add.overlap(this.ball, this.leftGoal, () => {
             if (!this.goalScored) {
-                this.scoreGoal(2);
+                this.scoreGoal(2);  // Team 2 scores
             }
         });
 
         this.physics.add.overlap(this.ball, this.rightGoal, () => {
             if (!this.goalScored) {
-                this.scoreGoal(1);
+                this.scoreGoal(1);  // Team 1 scores
             }
         });
+    }
+
+    handlePlayerCollision(player1, player2) {
+        // When players collide with ball between them, bounce ball away
+        const ballDist1 = Phaser.Math.Distance.Between(player1.x, player1.y, this.ball.x, this.ball.y);
+        const ballDist2 = Phaser.Math.Distance.Between(player2.x, player2.y, this.ball.x, this.ball.y);
+
+        if (ballDist1 < 100 && ballDist2 < 100) {
+            // Ball is between players - bounce it up
+            this.ball.body.velocity.y = -400;
+            this.ball.body.velocity.x = Phaser.Math.Between(-200, 200);
+        }
     }
 
     handleBallHit(player) {
@@ -812,12 +1418,27 @@ class GameScene extends Phaser.Scene {
         this.ball.setPosition(600, 300);
         this.ball.setVelocity(0, 0);
 
-        // Reset players
-        this.player1.setPosition(200, 450);
-        this.player1.setVelocity(0, 0);
+        if (this.gameMode === '2v2') {
+            // Reset 2v2 positions
+            this.player1.setPosition(150, 420);
+            this.player1.setVelocity(0, 0);
 
-        this.player2.setPosition(1000, 450);
-        this.player2.setVelocity(0, 0);
+            this.player2.setPosition(1050, 420);
+            this.player2.setVelocity(0, 0);
+
+            this.player3.setPosition(250, 480);
+            this.player3.setVelocity(0, 0);
+
+            this.player4.setPosition(950, 480);
+            this.player4.setVelocity(0, 0);
+        } else {
+            // Reset 1v1 positions
+            this.player1.setPosition(200, 450);
+            this.player1.setVelocity(0, 0);
+
+            this.player2.setPosition(1000, 450);
+            this.player2.setVelocity(0, 0);
+        }
     }
 
     endMatch() {
@@ -833,8 +1454,188 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    updateBot(delta) {
-        if (this.gameMode !== 'bot' || this.matchEnded || this.goalScored) return;
+    updateBot(delta, player, playerNum) {
+        // Generic bot update for any player
+        if (this.matchEnded || this.goalScored) return;
+
+        const timerKey = `player${playerNum}`;
+        this.aiTimers[timerKey] += delta;
+        if (this.aiTimers[timerKey] < this.aiConfig.reactionTime) return;
+        this.aiTimers[timerKey] = 0;
+
+        const bot = player;
+        const ball = this.ball;
+        const ai = this.aiConfig;
+        const kickingKey = `player${playerNum}Kicking`;
+        const legKey = `player${playerNum}Leg`;
+        const legFootKey = `player${playerNum}LegFoot`;
+
+        // Calculate distances
+        const distToBall = Phaser.Math.Distance.Between(bot.x, bot.y, ball.x, ball.y);
+
+        // Determine target position based on role
+        let targetX = ball.x;
+        let targetGoalX = bot.team === 1 ? 1160 : 40;  // Opponent's goal
+
+        // Role-based AI behavior
+        if (bot.role === 'defender') {
+            // Defender stays back more
+            const homeX = bot.team === 1 ? 250 : 950;
+            const defenseThreshold = bot.team === 1 ? 400 : 800;
+
+            if (bot.team === 1) {
+                // Team 1 defender
+                if (ball.x > defenseThreshold) {
+                    targetX = Math.min(ball.x - 100, homeX + 150);
+                } else {
+                    targetX = homeX;
+                }
+            } else {
+                // Team 2 defender
+                if (ball.x < defenseThreshold) {
+                    targetX = Math.max(ball.x + 100, homeX - 150);
+                } else {
+                    targetX = homeX;
+                }
+            }
+        } else {
+            // Attacker pushes forward more
+            if (bot.team === 1) {
+                // Team 1 attacker
+                targetX = Math.min(ball.x + 50, 1000);
+            } else {
+                // Team 2 attacker
+                targetX = Math.max(ball.x - 50, 200);
+            }
+        }
+
+        // Avoid clustering with teammates
+        const teammates = this.gameMode === '2v2' ?
+            [this.player1, this.player2, this.player3, this.player4].filter(p => p !== bot && p.team === bot.team) : [];
+
+        for (let teammate of teammates) {
+            const teammateDist = Phaser.Math.Distance.Between(bot.x, bot.y, teammate.x, teammate.y);
+            if (teammateDist < 80) {
+                // Move away from teammate
+                targetX += (bot.x < teammate.x) ? -40 : 40;
+            }
+        }
+
+        // Move towards target
+        const moveSpeed = PLAYER_SPEED * ai.speed * (bot.role === 'attacker' ? 1.1 : 0.9);
+
+        if (Math.random() < ai.accuracy) {
+            if (bot.x < targetX - 30) {
+                bot.body.setVelocityX(moveSpeed);
+            } else if (bot.x > targetX + 30) {
+                bot.body.setVelocityX(-moveSpeed);
+            } else {
+                bot.body.setVelocityX(0);
+            }
+        }
+
+        // Jump if ball is high
+        if (ball.y < bot.y - 50 && distToBall < 150 && bot.body.touching.down) {
+            if (Math.random() < ai.jumpChance) {
+                bot.body.setVelocityY(JUMP_POWER);
+            }
+        }
+
+        // Kick when close
+        const kickRange = ai.kickRange * (bot.role === 'attacker' ? 1.2 : 1);
+        if (distToBall < kickRange && Math.random() < ai.accuracy) {
+            // Trigger kick animation for bot
+            if (!this[kickingKey]) {
+                this[kickingKey] = true;
+
+                const kickAngle = Phaser.Math.Angle.Between(bot.x, bot.y, targetGoalX, GOAL_Y);
+                const legEndX = bot.x + Math.cos(kickAngle) * LEG_REACH;
+                const legEndY = bot.y + 20 + Math.sin(kickAngle) * LEG_REACH;
+
+                // Position leg foot at kick position
+                this[legFootKey].x = legEndX;
+                this[legFootKey].y = legEndY;
+
+                // Animate bot leg
+                this.tweens.add({
+                    targets: this[legKey],
+                    rotation: kickAngle,
+                    duration: KICK_ANIMATION_TIME / 2,
+                    ease: 'Power2',
+                    yoyo: true,
+                    onComplete: () => {
+                        this[kickingKey] = false;
+                    }
+                });
+
+                // Kick the ball
+                this.performKick(bot, false);
+            }
+        }
+
+        // Update bot leg position when not kicking
+        if (!this[kickingKey]) {
+            this[legKey].x = bot.x;
+            this[legKey].y = bot.y + 20;
+            this[legKey].rotation = 0;
+            this[legFootKey].x = bot.x;
+            this[legFootKey].y = bot.y + 45;
+        }
+    }
+
+    update(time, delta) {
+        if (this.matchEnded || this.goalScored) return;
+
+        if (this.gameMode === '2v2') {
+            // 2v2 MODE
+            // Player 1 is always human
+            this.handlePlayerControls(this.player1, this.keys1, 1);
+
+            if (this.subMode === '4players') {
+                // All 4 players are human
+                this.handlePlayerControls(this.player2, this.keys2, 2);
+                this.handlePlayerControls(this.player3, this.keys3, 3);
+                this.handlePlayerControls(this.player4, this.keys4, 4);
+            } else if (this.subMode === 'bots') {
+                // 2 humans vs 2 bots (P1+P3 vs Bot2+Bot4)
+                this.handlePlayerControls(this.player3, this.keys3, 3);
+                this.updateBot(delta, this.player2, 2);
+                this.updateBot(delta, this.player4, 4);
+            } else if (this.subMode === 'hardcore') {
+                // 1 human + 1 human vs 2 bots (P1+P3 vs Bot2+Bot4)
+                this.handlePlayerControls(this.player3, this.keys3, 3);
+                this.updateBot(delta, this.player2, 2);
+                this.updateBot(delta, this.player4, 4);
+            }
+        } else {
+            // 1v1 MODE (original)
+            // Player 1 controls (always human)
+            this.handlePlayerControls(this.player1, this.keys1, 1);
+
+            // Player 2: human or bot
+            if (this.gameMode === 'pvp') {
+                this.handlePlayerControls(this.player2, this.keys2, 2);
+            } else if (this.gameMode === 'bot') {
+                // For 1v1 bot mode, use simplified updateBot
+                this.updateBotSimple(delta);
+            }
+        }
+
+        // Limit ball speed
+        const ballSpeed = Math.sqrt(
+            this.ball.body.velocity.x ** 2 +
+            this.ball.body.velocity.y ** 2
+        );
+        if (ballSpeed > 800) {
+            const scale = 800 / ballSpeed;
+            this.ball.body.velocity.x *= scale;
+            this.ball.body.velocity.y *= scale;
+        }
+    }
+
+    updateBotSimple(delta) {
+        // Simple bot for 1v1 mode (original behavior)
+        if (this.matchEnded || this.goalScored) return;
 
         this.aiTimer += delta;
         if (this.aiTimer < this.aiConfig.reactionTime) return;
@@ -916,36 +1717,11 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    update(time, delta) {
-        if (this.matchEnded || this.goalScored) return;
-
-        // Player 1 controls (always human)
-        this.handlePlayerControls(this.player1, this.keys1);
-
-        // Player 2: human or bot
-        if (this.gameMode === 'pvp') {
-            this.handlePlayerControls(this.player2, this.keys2);
-        } else {
-            this.updateBot(delta);
-        }
-
-        // Limit ball speed
-        const ballSpeed = Math.sqrt(
-            this.ball.body.velocity.x ** 2 +
-            this.ball.body.velocity.y ** 2
-        );
-        if (ballSpeed > 800) {
-            const scale = 800 / ballSpeed;
-            this.ball.body.velocity.x *= scale;
-            this.ball.body.velocity.y *= scale;
-        }
-    }
-
-    handlePlayerControls(player, keys) {
-        // Determine which player we're controlling
-        const isPlayer1 = (player === this.player1);
-        const leg = isPlayer1 ? this.player1Leg : this.player2Leg;
-        const legFoot = isPlayer1 ? this.player1LegFoot : this.player2LegFoot;
+    handlePlayerControls(player, keys, playerNum) {
+        // Get the appropriate leg and foot for this player
+        const leg = this[`player${playerNum}Leg`];
+        const legFoot = this[`player${playerNum}LegFoot`];
+        const kickingKey = `player${playerNum}Kicking`;
 
         // Horizontal movement
         if (keys.left.isDown) {
@@ -962,7 +1738,7 @@ class GameScene extends Phaser.Scene {
         }
 
         // Update leg position to follow player
-        if (!this[isPlayer1 ? 'player1Kicking' : 'player2Kicking']) {
+        if (!this[kickingKey]) {
             leg.x = player.x;
             leg.y = player.y + 20;
             leg.rotation = 0;
@@ -977,8 +1753,8 @@ class GameScene extends Phaser.Scene {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // Start kick animation
-            if (!this[isPlayer1 ? 'player1Kicking' : 'player2Kicking']) {
-                this[isPlayer1 ? 'player1Kicking' : 'player2Kicking'] = true;
+            if (!this[kickingKey]) {
+                this[kickingKey] = true;
 
                 // Animate leg forward
                 const kickAngle = Math.atan2(dy, dx);
@@ -997,7 +1773,7 @@ class GameScene extends Phaser.Scene {
                     ease: 'Power2',
                     yoyo: true,
                     onComplete: () => {
-                        this[isPlayer1 ? 'player1Kicking' : 'player2Kicking'] = false;
+                        this[kickingKey] = false;
                     }
                 });
 
@@ -1024,7 +1800,17 @@ const config = {
             debug: false
         }
     },
-    scene: [MenuScene, DifficultyScene, GameScene, PauseScene, GameOverScene]
+    scene: [
+        MenuScene,
+        Mode1v1Scene,
+        Mode2v2Scene,
+        DifficultyScene,
+        Difficulty2v2Scene,
+        DifficultyHardcoreScene,
+        GameScene,
+        PauseScene,
+        GameOverScene
+    ]
 };
 
 // ==================== START GAME ====================
