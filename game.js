@@ -49,23 +49,6 @@ const AI_CONFIG = {
     }
 };
 
-// ==================== GAME CONFIGURATION ====================
-const config = {
-    type: Phaser.AUTO,
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
-    parent: 'game-container',
-    backgroundColor: '#87CEEB',
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: GRAVITY },
-            debug: false
-        }
-    },
-    scene: [MenuScene, DifficultyScene, GameScene, PauseScene, GameOverScene]
-};
-
 // ==================== MENU SCENE ====================
 class MenuScene extends Phaser.Scene {
     constructor() {
@@ -715,6 +698,23 @@ class GameScene extends Phaser.Scene {
         }
     }
 }
+
+// ==================== GAME CONFIGURATION ====================
+const config = {
+    type: Phaser.AUTO,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    parent: 'game-container',
+    backgroundColor: '#87CEEB',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: GRAVITY },
+            debug: false
+        }
+    },
+    scene: [MenuScene, DifficultyScene, GameScene, PauseScene, GameOverScene]
+};
 
 // ==================== START GAME ====================
 const game = new Phaser.Game(config);
