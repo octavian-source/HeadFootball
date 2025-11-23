@@ -349,6 +349,7 @@ class GameScene extends Phaser.Scene {
         this.player1.setSize(PLAYER_SIZE, PLAYER_SIZE * 2);
         this.player1.body.setBounce(0.2);
         this.player1.body.setCollideWorldBounds(true);
+        this.player1.body.allowGravity = true;
 
         // Player 2 / Bot (Blue - right side)
         this.player2 = this.physics.add.container(1000, 500);
@@ -369,6 +370,7 @@ class GameScene extends Phaser.Scene {
         this.player2.setSize(PLAYER_SIZE, PLAYER_SIZE * 2);
         this.player2.body.setBounce(0.2);
         this.player2.body.setCollideWorldBounds(true);
+        this.player2.body.allowGravity = true;
     }
 
     createBall() {
