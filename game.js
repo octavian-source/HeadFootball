@@ -1,51 +1,51 @@
-// ==================== SIMPLE HEAD FOOTBALL GAME ====================
-// Clean, working version with AI bot
+// ==================== HEAD FOOTBALL - COMPLETE REWRITE ====================
+// Fixed version with proper textures and working physics
 
 // ==================== GAME CONSTANTS ====================
 const GAME_WIDTH = 1200;
 const GAME_HEIGHT = 650;
-const GROUND_Y = 620;
-const GRAVITY = 900;
-const MATCH_TIME = 90; // seconds
+const GROUND_Y = 580;
+const GRAVITY = 1000;
+const MATCH_TIME = 90;
 
 // Player settings
-const PLAYER_SPEED = 350;
-const JUMP_POWER = -500;
+const PLAYER_SPEED = 300;
+const JUMP_POWER = -550;
 const PLAYER_SIZE = 40;
 
 // Ball settings
-const BALL_BOUNCE = 0.85;
-const BALL_SIZE = 12;
-const KICK_POWER = 600;
-const HIGH_KICK_POWER = 500;
+const BALL_BOUNCE = 0.8;
+const BALL_SIZE = 15;
+const KICK_POWER = 500;
+const HIGH_KICK_POWER = 400;
 
 // Goal settings
-const GOAL_WIDTH = 50;
-const GOAL_HEIGHT = 120;
-const GOAL_Y = 560;
+const GOAL_WIDTH = 80;
+const GOAL_HEIGHT = 150;
+const GOAL_Y = GROUND_Y - GOAL_HEIGHT / 2;
 
 // AI Settings
 const AI_CONFIG = {
     easy: {
-        reactionTime: 400,
-        accuracy: 0.6,
-        speed: 0.7,
-        jumpChance: 0.3,
-        kickRange: 70
-    },
-    medium: {
-        reactionTime: 250,
-        accuracy: 0.8,
-        speed: 0.85,
-        jumpChance: 0.5,
+        reactionTime: 500,
+        accuracy: 0.5,
+        speed: 0.6,
+        jumpChance: 0.2,
         kickRange: 80
     },
-    hard: {
-        reactionTime: 100,
-        accuracy: 0.95,
-        speed: 1.0,
-        jumpChance: 0.7,
+    medium: {
+        reactionTime: 300,
+        accuracy: 0.75,
+        speed: 0.8,
+        jumpChance: 0.4,
         kickRange: 90
+    },
+    hard: {
+        reactionTime: 150,
+        accuracy: 0.9,
+        speed: 1.0,
+        jumpChance: 0.6,
+        kickRange: 100
     }
 };
 
@@ -55,71 +55,86 @@ class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
 
+    preload() {
+        // We'll create all textures in create() to avoid loading issues
+    }
+
     create() {
+        // Sky background
         this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
 
+        // Title
         this.add.text(600, 120, 'HEAD FOOTBALL', {
             fontSize: '64px',
             fontFamily: 'Arial Black',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 6
+            strokeThickness: 8
         }).setOrigin(0.5);
 
-        // Player vs Player button
-        const pvpButton = this.add.rectangle(600, 280, 350, 70, 0x4CAF50);
-        pvpButton.setInteractive({ useHandCursor: true });
-        this.add.text(600, 280, 'Player vs Player', {
-            fontSize: '28px',
-            fontFamily: 'Arial',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-
-        pvpButton.on('pointerdown', () => {
+        // Create buttons with proper interactive areas
+        this.createButton(600, 280, 350, 70, 0x4CAF50, 'PLAYER vs PLAYER', () => {
+            console.log('Starting PvP mode');
             this.scene.start('GameScene', { mode: 'pvp' });
         });
-        pvpButton.on('pointerover', () => pvpButton.setFillStyle(0x66BB6A));
-        pvpButton.on('pointerout', () => pvpButton.setFillStyle(0x4CAF50));
 
-        // Player vs Bot button
-        const botButton = this.add.rectangle(600, 370, 350, 70, 0x2196F3);
-        botButton.setInteractive({ useHandCursor: true });
-        this.add.text(600, 370, 'Player vs Bot', {
-            fontSize: '28px',
-            fontFamily: 'Arial',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-
-        botButton.on('pointerdown', () => {
+        this.createButton(600, 370, 350, 70, 0x2196F3, 'PLAYER vs BOT', () => {
+            console.log('Opening difficulty selection');
             this.scene.start('DifficultyScene');
         });
-        botButton.on('pointerover', () => botButton.setFillStyle(0x42A5F5));
-        botButton.on('pointerout', () => botButton.setFillStyle(0x2196F3));
 
         // Controls info
-        this.add.text(600, 480, 'Player 1: WASD + S (kick) + X (high kick)', {
-            fontSize: '16px',
+        this.add.text(600, 480, 'Player 1: WASD + Space (kick)', {
+            fontSize: '18px',
             fontFamily: 'Arial',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 3
         }).setOrigin(0.5);
 
-        this.add.text(600, 510, 'Player 2: Arrows + Down (kick) + NumPad0 (high kick)', {
-            fontSize: '16px',
+        this.add.text(600, 510, 'Player 2: Arrow Keys + Shift (kick)', {
+            fontSize: '18px',
             fontFamily: 'Arial',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 3
         }).setOrigin(0.5);
 
-        this.add.text(600, 550, 'ESC: Pause', {
-            fontSize: '16px',
+        this.add.text(600, 550, 'ESC: Pause Game', {
+            fontSize: '20px',
             fontFamily: 'Arial',
             color: '#ffff00',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 3
         }).setOrigin(0.5);
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                (color >> 16) & 0xFF,
+                ((color >> 8) & 0xFF) + 30,
+                (color & 0xFF) + 30,
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
     }
 }
 
@@ -130,8 +145,10 @@ class DifficultyScene extends Phaser.Scene {
     }
 
     create() {
+        // Background
         this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
 
+        // Title
         this.add.text(600, 150, 'SELECT DIFFICULTY', {
             fontSize: '48px',
             fontFamily: 'Arial Black',
@@ -140,37 +157,54 @@ class DifficultyScene extends Phaser.Scene {
             strokeThickness: 6
         }).setOrigin(0.5);
 
-        // Easy
-        const easyBtn = this.add.rectangle(600, 280, 300, 60, 0x4CAF50);
-        easyBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 280, 'EASY', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        easyBtn.on('pointerdown', () => this.scene.start('GameScene', { mode: 'bot', difficulty: 'easy' }));
-        easyBtn.on('pointerover', () => easyBtn.setFillStyle(0x66BB6A));
-        easyBtn.on('pointerout', () => easyBtn.setFillStyle(0x4CAF50));
+        // Difficulty buttons
+        this.createButton(600, 280, 300, 60, 0x4CAF50, 'EASY', () => {
+            console.log('Starting bot game - Easy');
+            this.scene.start('GameScene', { mode: 'bot', difficulty: 'easy' });
+        });
 
-        // Medium
-        const mediumBtn = this.add.rectangle(600, 360, 300, 60, 0xFF9800);
-        mediumBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 360, 'MEDIUM', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        mediumBtn.on('pointerdown', () => this.scene.start('GameScene', { mode: 'bot', difficulty: 'medium' }));
-        mediumBtn.on('pointerover', () => mediumBtn.setFillStyle(0xFFB74D));
-        mediumBtn.on('pointerout', () => mediumBtn.setFillStyle(0xFF9800));
+        this.createButton(600, 360, 300, 60, 0xFF9800, 'MEDIUM', () => {
+            console.log('Starting bot game - Medium');
+            this.scene.start('GameScene', { mode: 'bot', difficulty: 'medium' });
+        });
 
-        // Hard
-        const hardBtn = this.add.rectangle(600, 440, 300, 60, 0xf44336);
-        hardBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 440, 'HARD', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        hardBtn.on('pointerdown', () => this.scene.start('GameScene', { mode: 'bot', difficulty: 'hard' }));
-        hardBtn.on('pointerover', () => hardBtn.setFillStyle(0xE57373));
-        hardBtn.on('pointerout', () => hardBtn.setFillStyle(0xf44336));
+        this.createButton(600, 440, 300, 60, 0xf44336, 'HARD', () => {
+            console.log('Starting bot game - Hard');
+            this.scene.start('GameScene', { mode: 'bot', difficulty: 'hard' });
+        });
 
         // Back button
-        const backBtn = this.add.rectangle(600, 530, 200, 50, 0x666666);
-        backBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 530, 'BACK', { fontSize: '24px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
-        backBtn.on('pointerover', () => backBtn.setFillStyle(0x888888));
-        backBtn.on('pointerout', () => backBtn.setFillStyle(0x666666));
+        this.createButton(600, 530, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('MenuScene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
     }
 }
 
@@ -181,28 +215,24 @@ class PauseScene extends Phaser.Scene {
     }
 
     create() {
+        // Semi-transparent overlay
         this.add.rectangle(600, 325, 1200, 650, 0x000000, 0.7);
 
-        this.add.text(600, 200, 'PAUSED', {
+        // Pause text
+        this.add.text(600, 200, 'GAME PAUSED', {
             fontSize: '64px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Resume
-        const resumeBtn = this.add.rectangle(600, 320, 300, 60, 0x4CAF50);
-        resumeBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 320, 'RESUME', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        resumeBtn.on('pointerdown', () => {
+        // Resume button
+        this.createButton(600, 320, 300, 60, 0x4CAF50, 'RESUME', () => {
             this.scene.resume('GameScene');
             this.scene.stop();
         });
 
-        // Menu
-        const menuBtn = this.add.rectangle(600, 400, 300, 60, 0xFF9800);
-        menuBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 400, 'MAIN MENU', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        menuBtn.on('pointerdown', () => {
+        // Main menu button
+        this.createButton(600, 400, 300, 60, 0xFF9800, 'MAIN MENU', () => {
             this.scene.stop('GameScene');
             this.scene.stop();
             this.scene.start('MenuScene');
@@ -213,6 +243,21 @@ class PauseScene extends Phaser.Scene {
             this.scene.resume('GameScene');
             this.scene.stop();
         });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
     }
 }
 
@@ -229,42 +274,61 @@ class GameOverScene extends Phaser.Scene {
     }
 
     create() {
+        // Background
         this.add.rectangle(600, 325, 1200, 650, 0x222222);
 
+        // Determine winner
         let winnerText = 'DRAW!';
         let winnerColor = '#ffff00';
 
         if (this.finalScore1 > this.finalScore2) {
             winnerText = this.gameMode === 'bot' ? 'YOU WIN!' : 'PLAYER 1 WINS!';
-            winnerColor = '#ff0000';
+            winnerColor = '#00ff00';
         } else if (this.finalScore2 > this.finalScore1) {
             winnerText = this.gameMode === 'bot' ? 'BOT WINS!' : 'PLAYER 2 WINS!';
-            winnerColor = '#0000ff';
+            winnerColor = '#ff0000';
         }
 
+        // Winner text
         this.add.text(600, 200, winnerText, {
             fontSize: '64px',
             fontFamily: 'Arial Black',
-            color: winnerColor
+            color: winnerColor,
+            stroke: '#000000',
+            strokeThickness: 6
         }).setOrigin(0.5);
 
+        // Final score
         this.add.text(600, 300, `Final Score: ${this.finalScore1} - ${this.finalScore2}`, {
             fontSize: '36px',
             fontFamily: 'Arial',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Play Again
-        const playBtn = this.add.rectangle(600, 400, 300, 60, 0x4CAF50);
-        playBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 400, 'PLAY AGAIN', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        playBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        // Play again button
+        this.createButton(600, 400, 300, 60, 0x4CAF50, 'PLAY AGAIN', () => {
+            this.scene.start('MenuScene');
+        });
 
-        // Menu
-        const menuBtn = this.add.rectangle(600, 480, 300, 60, 0xFF9800);
-        menuBtn.setInteractive({ useHandCursor: true });
-        this.add.text(600, 480, 'MAIN MENU', { fontSize: '28px', fontFamily: 'Arial', color: '#ffffff' }).setOrigin(0.5);
-        menuBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        // Main menu button
+        this.createButton(600, 480, 300, 60, 0xFF9800, 'MAIN MENU', () => {
+            this.scene.start('MenuScene');
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
     }
 }
 
@@ -279,16 +343,28 @@ class GameScene extends Phaser.Scene {
         this.difficulty = data.difficulty || 'medium';
         this.aiConfig = AI_CONFIG[this.difficulty];
         this.aiTimer = 0;
-        this.aiAction = null;
+        console.log(`Game initialized: mode=${this.gameMode}, difficulty=${this.difficulty}`);
+    }
+
+    preload() {
+        // Create textures programmatically
+        this.load.on('complete', () => {
+            console.log('Preload complete');
+        });
     }
 
     create() {
+        console.log('GameScene create() started');
+
+        // Initialize game state
         this.score1 = 0;
         this.score2 = 0;
         this.goalScored = false;
         this.matchTime = MATCH_TIME;
         this.matchEnded = false;
 
+        // Create game elements in order
+        this.createTextures();
         this.createField();
         this.createPlayers();
         this.createBall();
@@ -296,100 +372,143 @@ class GameScene extends Phaser.Scene {
         this.setupControls();
         this.setupCollisions();
         this.startMatchTimer();
+
+        console.log('GameScene create() completed');
+    }
+
+    createTextures() {
+        // Create player texture (red circle for head, lines for body)
+        if (!this.textures.exists('player1')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0xff0000, 1);
+            graphics.fillCircle(20, 20, 20);
+            graphics.lineStyle(4, 0xff0000);
+            graphics.strokeCircle(20, 20, 20);
+            graphics.generateTexture('player1', 40, 40);
+            graphics.destroy();
+        }
+
+        // Create player 2 texture
+        if (!this.textures.exists('player2')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0x0000ff, 1);
+            graphics.fillCircle(20, 20, 20);
+            graphics.lineStyle(4, 0x0000ff);
+            graphics.strokeCircle(20, 20, 20);
+            graphics.generateTexture('player2', 40, 40);
+            graphics.destroy();
+        }
+
+        // Create ball texture
+        if (!this.textures.exists('ball')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillCircle(15, 15, 15);
+            graphics.lineStyle(2, 0x000000);
+            graphics.strokeCircle(15, 15, 15);
+            graphics.generateTexture('ball', 30, 30);
+            graphics.destroy();
+        }
+
+        // Create ground texture
+        if (!this.textures.exists('ground')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0x3a7d3a, 1);
+            graphics.fillRect(0, 0, 1200, 20);
+            graphics.generateTexture('ground', 1200, 20);
+            graphics.destroy();
+        }
+
+        // Create wall texture
+        if (!this.textures.exists('wall')) {
+            const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+            graphics.fillStyle(0x000000, 0);
+            graphics.fillRect(0, 0, 10, 650);
+            graphics.generateTexture('wall', 10, 650);
+            graphics.destroy();
+        }
     }
 
     createField() {
+        // Sky background
         this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
-        this.add.rectangle(600, 585, 1200, 130, 0x3a7d3a);
 
-        // Ground - use zone instead of null texture
-        this.ground = this.add.zone(600, GROUND_Y, 1200, 20);
-        this.physics.world.enable(this.ground, Phaser.Physics.Arcade.STATIC_BODY);
+        // Grass
+        this.add.rectangle(600, GROUND_Y + 35, 1200, 140, 0x3a7d3a);
 
-        // Left wall
-        this.leftWall = this.add.zone(-5, 325, 10, 650);
-        this.physics.world.enable(this.leftWall, Phaser.Physics.Arcade.STATIC_BODY);
+        // Create ground with physics
+        this.ground = this.physics.add.sprite(600, GROUND_Y, 'ground');
+        this.ground.setImmovable(true);
+        this.ground.body.allowGravity = false;
 
-        // Right wall
-        this.rightWall = this.add.zone(1205, 325, 10, 650);
-        this.physics.world.enable(this.rightWall, Phaser.Physics.Arcade.STATIC_BODY);
+        // Create walls
+        this.leftWall = this.physics.add.sprite(-5, 325, 'wall');
+        this.leftWall.setImmovable(true);
+        this.leftWall.body.allowGravity = false;
 
-        // Left goal
-        this.leftGoal = this.add.zone(25, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT);
-        this.physics.world.enable(this.leftGoal, Phaser.Physics.Arcade.STATIC_BODY);
+        this.rightWall = this.physics.add.sprite(1205, 325, 'wall');
+        this.rightWall.setImmovable(true);
+        this.rightWall.body.allowGravity = false;
 
-        // Right goal
-        this.rightGoal = this.add.zone(1175, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT);
-        this.physics.world.enable(this.rightGoal, Phaser.Physics.Arcade.STATIC_BODY);
+        // Goal areas (visual only)
+        this.add.rectangle(40, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
+        this.add.rectangle(40, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
 
-        // Goal visuals
-        this.add.rectangle(25, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
-        this.add.rectangle(25, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
-        this.add.rectangle(1175, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
-        this.add.rectangle(1175, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
+        this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
+        this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
+
+        // Goal sensors (for scoring)
+        this.leftGoal = this.add.rectangle(40, GOAL_Y, GOAL_WIDTH - 20, GOAL_HEIGHT - 10, 0x00ff00, 0);
+        this.physics.add.existing(this.leftGoal, true);
+
+        this.rightGoal = this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH - 20, GOAL_HEIGHT - 10, 0x00ff00, 0);
+        this.physics.add.existing(this.rightGoal, true);
     }
 
     createPlayers() {
         // Player 1 (Red - left side)
-        this.player1 = this.physics.add.container(200, 500);
-        const p1Graphics = this.add.graphics();
-        p1Graphics.lineStyle(4, 0xff0000);
-        p1Graphics.strokeCircle(0, -30, 20);
-        p1Graphics.beginPath();
-        p1Graphics.moveTo(0, -10);
-        p1Graphics.lineTo(0, 20);
-        p1Graphics.moveTo(-15, 0);
-        p1Graphics.lineTo(15, 0);
-        p1Graphics.moveTo(0, 20);
-        p1Graphics.lineTo(-10, 40);
-        p1Graphics.moveTo(0, 20);
-        p1Graphics.lineTo(10, 40);
-        p1Graphics.strokePath();
-        this.player1.add(p1Graphics);
-        this.player1.setSize(PLAYER_SIZE, PLAYER_SIZE * 2);
-        this.player1.body.setBounce(0.2);
-        this.player1.body.setCollideWorldBounds(true);
-        this.player1.body.allowGravity = true;
+        this.player1 = this.physics.add.sprite(200, 450, 'player1');
+        this.player1.setBounce(0.2);
+        this.player1.setCollideWorldBounds(true);
+        this.player1.setScale(1.5);
 
         // Player 2 / Bot (Blue - right side)
-        this.player2 = this.physics.add.container(1000, 500);
-        const p2Graphics = this.add.graphics();
-        p2Graphics.lineStyle(4, 0x0000ff);
-        p2Graphics.strokeCircle(0, -30, 20);
-        p2Graphics.beginPath();
-        p2Graphics.moveTo(0, -10);
-        p2Graphics.lineTo(0, 20);
-        p2Graphics.moveTo(-15, 0);
-        p2Graphics.lineTo(15, 0);
-        p2Graphics.moveTo(0, 20);
-        p2Graphics.lineTo(-10, 40);
-        p2Graphics.moveTo(0, 20);
-        p2Graphics.lineTo(10, 40);
-        p2Graphics.strokePath();
-        this.player2.add(p2Graphics);
-        this.player2.setSize(PLAYER_SIZE, PLAYER_SIZE * 2);
-        this.player2.body.setBounce(0.2);
-        this.player2.body.setCollideWorldBounds(true);
-        this.player2.body.allowGravity = true;
+        this.player2 = this.physics.add.sprite(1000, 450, 'player2');
+        this.player2.setBounce(0.2);
+        this.player2.setCollideWorldBounds(true);
+        this.player2.setScale(1.5);
+
+        // Add name labels
+        this.add.text(200, 400, 'P1', {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#ff0000'
+        }).setOrigin(0.5);
+
+        const p2Label = this.gameMode === 'bot' ? 'BOT' : 'P2';
+        this.add.text(1000, 400, p2Label, {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#0000ff'
+        }).setOrigin(0.5);
     }
 
     createBall() {
-        // Create ball as a zone with circular physics body
-        this.ball = this.add.zone(600, 200, BALL_SIZE * 2, BALL_SIZE * 2);
-        this.physics.world.enable(this.ball, Phaser.Physics.Arcade.DYNAMIC_BODY);
-        this.ball.body.setCircle(BALL_SIZE);
-        this.ball.body.setBounce(BALL_BOUNCE);
-        this.ball.body.setCollideWorldBounds(true);
-        this.ball.body.setMaxVelocity(800);
-
-        this.ballGraphics = this.add.graphics();
+        this.ball = this.physics.add.sprite(600, 300, 'ball');
+        this.ball.setBounce(BALL_BOUNCE);
+        this.ball.setCollideWorldBounds(true);
+        this.ball.body.setCircle(15);
+        this.ball.setMaxVelocity(800, 800);
     }
 
     createUI() {
+        // Score display
         this.scoreText1 = this.add.text(500, 50, '0', {
             fontSize: '48px',
             fontFamily: 'Arial Black',
-            color: '#ff0000'
+            color: '#ff0000',
+            stroke: '#ffffff',
+            strokeThickness: 3
         }).setOrigin(1, 0.5);
 
         this.add.text(600, 50, '-', {
@@ -401,19 +520,22 @@ class GameScene extends Phaser.Scene {
         this.scoreText2 = this.add.text(700, 50, '0', {
             fontSize: '48px',
             fontFamily: 'Arial Black',
-            color: '#0000ff'
+            color: '#0000ff',
+            stroke: '#ffffff',
+            strokeThickness: 3
         }).setOrigin(0, 0.5);
 
+        // Timer
         this.timerText = this.add.text(600, 20, `Time: ${this.matchTime}`, {
             fontSize: '24px',
             fontFamily: 'Arial',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 3
         }).setOrigin(0.5);
 
         // Mode indicator
-        const modeText = this.gameMode === 'bot' ? `vs BOT (${this.difficulty.toUpperCase()})` : 'PvP';
+        const modeText = this.gameMode === 'bot' ? `vs BOT (${this.difficulty.toUpperCase()})` : 'Player vs Player';
         this.add.text(600, 100, modeText, {
             fontSize: '18px',
             fontFamily: 'Arial',
@@ -422,34 +544,49 @@ class GameScene extends Phaser.Scene {
             strokeThickness: 2
         }).setOrigin(0.5);
 
-        this.add.text(10, 10, 'P1: WASD + S/X', {
+        // Controls reminder
+        this.add.text(10, 10, 'P1: WASD + Space', {
             fontSize: '14px',
-            color: '#ffffff'
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
         });
+
+        if (this.gameMode === 'pvp') {
+            this.add.text(1190, 10, 'P2: Arrows + Shift', {
+                fontSize: '14px',
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 2
+            }).setOrigin(1, 0);
+        }
 
         this.add.text(600, 630, 'ESC: Pause', {
             fontSize: '14px',
-            color: '#ffffff'
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
         }).setOrigin(0.5);
     }
 
     setupControls() {
+        // Player 1 controls
         this.keys1 = {
             left: this.input.keyboard.addKey('A'),
             right: this.input.keyboard.addKey('D'),
             up: this.input.keyboard.addKey('W'),
-            kickLow: this.input.keyboard.addKey('S'),
-            kickHigh: this.input.keyboard.addKey('X')
+            kick: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         };
 
+        // Player 2 controls (for PvP mode)
         this.keys2 = {
             left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
             up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-            kickLow: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-            kickHigh: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO)
+            kick: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT)
         };
 
+        // Pause control
         this.input.keyboard.on('keydown-ESC', () => {
             if (!this.matchEnded) {
                 this.scene.pause();
@@ -459,9 +596,12 @@ class GameScene extends Phaser.Scene {
     }
 
     setupCollisions() {
+        // Ball collisions
         this.physics.add.collider(this.ball, this.ground);
         this.physics.add.collider(this.ball, this.leftWall);
         this.physics.add.collider(this.ball, this.rightWall);
+
+        // Player collisions
         this.physics.add.collider(this.player1, this.ground);
         this.physics.add.collider(this.player2, this.ground);
         this.physics.add.collider(this.player1, this.leftWall);
@@ -470,6 +610,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.player2, this.rightWall);
         this.physics.add.collider(this.player1, this.player2);
 
+        // Ball-player collisions
         this.physics.add.collider(this.ball, this.player1, () => {
             this.handleBallHit(this.player1);
         });
@@ -478,20 +619,26 @@ class GameScene extends Phaser.Scene {
             this.handleBallHit(this.player2);
         });
 
+        // Goal detection
         this.physics.add.overlap(this.ball, this.leftGoal, () => {
-            if (!this.goalScored) this.scoreGoal(2);
+            if (!this.goalScored) {
+                this.scoreGoal(2);
+            }
         });
 
         this.physics.add.overlap(this.ball, this.rightGoal, () => {
-            if (!this.goalScored) this.scoreGoal(1);
+            if (!this.goalScored) {
+                this.scoreGoal(1);
+            }
         });
     }
 
     handleBallHit(player) {
-        if (this.ball.y < player.y - 20) {
-            const angle = Phaser.Math.Angle.Between(player.x, player.y, this.ball.x, this.ball.y);
-            this.ball.body.setVelocity(Math.cos(angle) * 400, Math.sin(angle) * 400);
-        }
+        // Add some randomness to ball physics on contact
+        const angle = Phaser.Math.Angle.Between(player.x, player.y, this.ball.x, this.ball.y);
+        const force = 200;
+        this.ball.body.velocity.x += Math.cos(angle) * force;
+        this.ball.body.velocity.y += Math.sin(angle) * force;
     }
 
     startMatchTimer() {
@@ -501,9 +648,11 @@ class GameScene extends Phaser.Scene {
                 if (!this.matchEnded && !this.goalScored) {
                     this.matchTime--;
                     this.timerText.setText(`Time: ${this.matchTime}`);
+
                     if (this.matchTime <= 10) {
                         this.timerText.setColor('#ff0000');
                     }
+
                     if (this.matchTime <= 0) {
                         this.endMatch();
                     }
@@ -514,26 +663,29 @@ class GameScene extends Phaser.Scene {
     }
 
     scoreGoal(playerNum) {
-        if (this.goalScored) return;
+        if (this.goalScored || this.matchEnded) return;
         this.goalScored = true;
 
+        // Update score
         if (playerNum === 1) {
             this.score1++;
-            this.scoreText1.setText(this.score1);
+            this.scoreText1.setText(this.score1.toString());
         } else {
             this.score2++;
-            this.scoreText2.setText(this.score2);
+            this.scoreText2.setText(this.score2.toString());
         }
 
-        const goalText = this.add.text(600, 300, 'GOAL!', {
+        // Show goal text
+        const goalText = this.add.text(600, 300, 'GOAL!!!', {
             fontSize: '80px',
             fontFamily: 'Arial Black',
             color: '#ffff00',
             stroke: '#ff0000',
-            strokeThickness: 6
+            strokeThickness: 8
         }).setOrigin(0.5);
 
-        this.time.delayedCall(1000, () => {
+        // Reset after delay
+        this.time.delayedCall(1500, () => {
             goalText.destroy();
             this.resetPositions();
             this.goalScored = false;
@@ -541,26 +693,33 @@ class GameScene extends Phaser.Scene {
     }
 
     resetPositions() {
-        this.ball.setPosition(600, 200);
-        this.ball.body.setVelocity(0, 0);
-        this.player1.setPosition(200, 500);
-        this.player1.body.setVelocity(0, 0);
-        this.player2.setPosition(1000, 500);
-        this.player2.body.setVelocity(0, 0);
+        // Reset ball
+        this.ball.setPosition(600, 300);
+        this.ball.setVelocity(0, 0);
+
+        // Reset players
+        this.player1.setPosition(200, 450);
+        this.player1.setVelocity(0, 0);
+
+        this.player2.setPosition(1000, 450);
+        this.player2.setVelocity(0, 0);
     }
 
     endMatch() {
         this.matchEnded = true;
-        this.scene.start('GameOverScene', {
-            score1: this.score1,
-            score2: this.score2,
-            mode: this.gameMode
+
+        // Transition to game over scene
+        this.time.delayedCall(1000, () => {
+            this.scene.start('GameOverScene', {
+                score1: this.score1,
+                score2: this.score2,
+                mode: this.gameMode
+            });
         });
     }
 
-    // ==================== AI BOT LOGIC ====================
     updateBot(delta) {
-        if (this.gameMode !== 'bot') return;
+        if (this.gameMode !== 'bot' || this.matchEnded || this.goalScored) return;
 
         this.aiTimer += delta;
         if (this.aiTimer < this.aiConfig.reactionTime) return;
@@ -572,83 +731,47 @@ class GameScene extends Phaser.Scene {
 
         // Calculate distances
         const distToBall = Phaser.Math.Distance.Between(bot.x, bot.y, ball.x, ball.y);
-        const ballVelX = ball.body.velocity.x;
-        const ballVelY = ball.body.velocity.y;
 
-        // Predict ball position
-        const predictionTime = 0.3;
-        const predictedBallX = ball.x + ballVelX * predictionTime;
-        const predictedBallY = ball.y + ballVelY * predictionTime;
+        // Simple AI logic
+        let targetX = ball.x;
 
-        // Target position: between ball and own goal, with some intelligence
-        let targetX;
-
-        // If ball is coming towards bot's side
-        if (ball.x > 600 || ballVelX > 100) {
-            // Defensive: stay between ball and goal
-            targetX = Math.max(ball.x + 50, 900);
-        } else {
-            // Ball is on opponent's side - stay back but ready
-            targetX = 950;
+        // Defensive positioning when ball is far
+        if (ball.x < 600) {
+            targetX = 900; // Stay back near goal
         }
 
-        // Move towards target with accuracy factor
-        const moveThreshold = 30;
-        const speedMultiplier = PLAYER_SPEED * ai.speed;
+        // Move towards target
+        const moveSpeed = PLAYER_SPEED * ai.speed;
 
         if (Math.random() < ai.accuracy) {
-            if (bot.x < targetX - moveThreshold) {
-                bot.body.setVelocityX(speedMultiplier);
-            } else if (bot.x > targetX + moveThreshold) {
-                bot.body.setVelocityX(-speedMultiplier);
+            if (bot.x < targetX - 30) {
+                bot.body.setVelocityX(moveSpeed);
+            } else if (bot.x > targetX + 30) {
+                bot.body.setVelocityX(-moveSpeed);
             } else {
                 bot.body.setVelocityX(0);
             }
         }
 
-        // Jump logic - jump when ball is high and nearby
-        const shouldJump = (
-            ball.y < bot.y - 50 &&
-            distToBall < 200 &&
-            bot.body.touching.down &&
-            Math.random() < ai.jumpChance
-        );
-
-        if (shouldJump) {
-            bot.body.setVelocityY(JUMP_POWER);
+        // Jump if ball is high
+        if (ball.y < bot.y - 50 && distToBall < 150 && bot.body.touching.down) {
+            if (Math.random() < ai.jumpChance) {
+                bot.body.setVelocityY(JUMP_POWER);
+            }
         }
 
-        // Kick logic - kick when ball is close
+        // Kick when close
         if (distToBall < ai.kickRange && Math.random() < ai.accuracy) {
-            const angle = Math.atan2(ball.y - bot.y, ball.x - bot.x);
-
-            // Decide kick type based on ball position
-            if (ball.y < bot.y - 30) {
-                // Ball is high - header
-                this.ball.body.setVelocity(
-                    Math.cos(angle) * KICK_POWER * 0.8,
-                    -300
-                );
-            } else {
-                // Normal kick towards opponent's goal
-                const kickAngle = Math.atan2(GOAL_Y - ball.y, 25 - ball.x);
-                this.ball.body.setVelocity(
-                    Math.cos(kickAngle) * KICK_POWER,
-                    Math.sin(kickAngle) * KICK_POWER * 0.5
-                );
-            }
+            const kickAngle = Phaser.Math.Angle.Between(bot.x, bot.y, 40, GOAL_Y);
+            this.ball.body.setVelocity(
+                Math.cos(kickAngle) * KICK_POWER,
+                Math.sin(kickAngle) * KICK_POWER * 0.7
+            );
         }
     }
 
     update(time, delta) {
         if (this.matchEnded || this.goalScored) return;
-
-        // Update ball graphics
-        this.ballGraphics.clear();
-        this.ballGraphics.fillStyle(0xffffff);
-        this.ballGraphics.fillCircle(this.ball.x, this.ball.y, BALL_SIZE);
-        this.ballGraphics.lineStyle(2, 0x000000);
-        this.ballGraphics.strokeCircle(this.ball.x, this.ball.y, BALL_SIZE);
 
         // Player 1 controls (always human)
         this.handlePlayerControls(this.player1, this.keys1);
@@ -659,10 +782,21 @@ class GameScene extends Phaser.Scene {
         } else {
             this.updateBot(delta);
         }
+
+        // Limit ball speed
+        const ballSpeed = Math.sqrt(
+            this.ball.body.velocity.x ** 2 +
+            this.ball.body.velocity.y ** 2
+        );
+        if (ballSpeed > 800) {
+            const scale = 800 / ballSpeed;
+            this.ball.body.velocity.x *= scale;
+            this.ball.body.velocity.y *= scale;
+        }
     }
 
     handlePlayerControls(player, keys) {
-        // Movement
+        // Horizontal movement
         if (keys.left.isDown) {
             player.body.setVelocityX(-PLAYER_SPEED);
         } else if (keys.right.isDown) {
@@ -677,27 +811,17 @@ class GameScene extends Phaser.Scene {
         }
 
         // Kick
-        if (Phaser.Input.Keyboard.JustDown(keys.kickLow) || Phaser.Input.Keyboard.JustDown(keys.kickHigh)) {
+        if (Phaser.Input.Keyboard.JustDown(keys.kick)) {
             const dx = this.ball.x - player.x;
             const dy = this.ball.y - player.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < 60) {
+            if (distance < 80) {
                 const angle = Math.atan2(dy, dx);
-                const isHigh = keys.kickHigh.isDown;
-                const power = isHigh ? HIGH_KICK_POWER : KICK_POWER;
-
-                if (isHigh) {
-                    this.ball.body.setVelocity(
-                        Math.cos(angle) * power * 0.7,
-                        -Math.abs(Math.sin(angle) * power * 1.2)
-                    );
-                } else {
-                    this.ball.body.setVelocity(
-                        Math.cos(angle) * power,
-                        Math.sin(angle) * power * 0.5
-                    );
-                }
+                this.ball.body.setVelocity(
+                    Math.cos(angle) * KICK_POWER,
+                    Math.sin(angle) * KICK_POWER * 0.5
+                );
             }
         }
     }
@@ -721,4 +845,5 @@ const config = {
 };
 
 // ==================== START GAME ====================
+console.log('Starting Head Football game...');
 const game = new Phaser.Game(config);
