@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head Football - Career Mode Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        #game-container {
+            border: 5px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .controls-info {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 1200px;
+        }
+
+        .controls-info h2 {
+            color: #764ba2;
+            margin-top: 0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .control-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .control-section h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .control-section p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .career-info {
+            background: #ffd700;
+            color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Head Football - Career Mode Test</h1>
+
+    <div id="game-container"></div>
+
+    <div class="controls-info">
+        <div class="career-info">
+            CAREER MODE ACTIVE - 10 Progressive Levels!
+        </div>
+
+        <h2>Game Controls</h2>
+
+        <div class="controls-grid">
+            <div class="control-section">
+                <h3>Player 1 (Red)</h3>
+                <p><strong>Move:</strong> A/D (Left/Right)</p>
+                <p><strong>Jump:</strong> W</p>
+                <p><strong>Kick:</strong> Space</p>
+            </div>
+
+            <div class="control-section">
+                <h3>Career Mode Features</h3>
+                <p><strong>Levels 1-3:</strong> 1v1 Bot</p>
+                <p><strong>Levels 4-6:</strong> 1v2 Bots</p>
+                <p><strong>Levels 7-9:</strong> 1v3 Bots</p>
+                <p><strong>Level 10:</strong> 1v4 Boss!</p>
+            </div>
+
+            <div class="control-section">
+                <h3>Progress System</h3>
+                <p><strong>Save:</strong> Automatic</p>
+                <p><strong>Unlock:</strong> Win to progress</p>
+                <p><strong>Reset:</strong> In career menu</p>
+                <p><strong>Storage:</strong> localStorage</p>
+            </div>
+        </div>
+
+        <div class="test-buttons">
+            <button onclick="testCareerLevel(1)">Test Level 1</button>
+            <button onclick="testCareerLevel(4)">Test Level 4 (1v2)</button>
+            <button onclick="testCareerLevel(7)">Test Level 7 (1v3)</button>
+            <button onclick="testCareerLevel(10)">Test Level 10 (Boss)</button>
+            <button onclick="resetProgress()">Reset Career Progress</button>
+            <button onclick="unlockAllLevels()">Unlock All Levels (Test)</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        // Initialize the game
+        const game = new Phaser.Game(config);
+
+        // Test helper functions
+        function testCareerLevel(level) {
+            // Temporarily unlock the level for testing
+            const progress = CareerManager.getProgress();
+            if (!progress.highestUnlockedLevel >= level) {
+                progress.highestUnlockedLevel = level;
+                CareerManager.saveProgress(progress);
+            }
+
+            // Get level config
+            const levelConfig = CAREER_LEVELS[level - 1];
+            let difficulty = levelConfig.difficulty;
+
+            if (difficulty === 'belowEasy') {
+                difficulty = 'easy';
+            } else if (difficulty === 'mediumEasy') {
+                difficulty = 'medium';
+            }
+
+            // Start the game at specific career level
+            game.scene.stop('MenuScene');
+            game.scene.stop('CareerMenuScene');
+            game.scene.start('GameScene', {
+                mode: 'career',
+                careerLevel: level,
+                botCount: levelConfig.opponents,
+                difficulty: difficulty,
+                customAIConfig: CAREER_AI_CONFIG[levelConfig.difficulty] || AI_CONFIG[difficulty]
+            });
+        }
+
+        function resetProgress() {
+            if (confirm('Reset all career progress?')) {
+                CareerManager.resetProgress();
+                alert('Career progress has been reset!');
+                location.reload();
+            }
+        }
+
+        function unlockAllLevels() {
+            const progress = {
+                completedLevels: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                currentLevel: 10,
+                highestUnlockedLevel: 10
+            };
+            CareerManager.saveProgress(progress);
+            alert('All levels unlocked for testing!');
+            location.reload();
+        }
+
+        console.log('Career Mode Test Ready!');
+        console.log('Current Progress:', CareerManager.getProgress());
+    </script>
+</body>
+</html>

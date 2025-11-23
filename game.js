@@ -52,6 +52,88 @@ const AI_CONFIG = {
     }
 };
 
+// ==================== CAREER DATA MANAGER ====================
+const CareerManager = {
+    getProgress() {
+        const saved = localStorage.getItem('headFootballCareerProgress');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return {
+            completedLevels: [],
+            currentLevel: 1,
+            highestUnlockedLevel: 1
+        };
+    },
+
+    saveProgress(progress) {
+        localStorage.setItem('headFootballCareerProgress', JSON.stringify(progress));
+    },
+
+    completeLevel(level) {
+        const progress = this.getProgress();
+        if (!progress.completedLevels.includes(level)) {
+            progress.completedLevels.push(level);
+        }
+        progress.currentLevel = Math.min(level + 1, 10);
+        progress.highestUnlockedLevel = Math.max(progress.highestUnlockedLevel, level + 1);
+        this.saveProgress(progress);
+        return progress;
+    },
+
+    resetProgress() {
+        const defaultProgress = {
+            completedLevels: [],
+            currentLevel: 1,
+            highestUnlockedLevel: 1
+        };
+        this.saveProgress(defaultProgress);
+        return defaultProgress;
+    },
+
+    isLevelUnlocked(level) {
+        const progress = this.getProgress();
+        return level <= progress.highestUnlockedLevel;
+    },
+
+    isLevelCompleted(level) {
+        const progress = this.getProgress();
+        return progress.completedLevels.includes(level);
+    }
+};
+
+// Career level configurations
+const CAREER_LEVELS = [
+    { level: 1, opponents: 1, difficulty: 'belowEasy', description: '1 vs 1 Bot (Below Easy)' },
+    { level: 2, opponents: 1, difficulty: 'easy', description: '1 vs 1 Bot (Easy)' },
+    { level: 3, opponents: 1, difficulty: 'mediumEasy', description: '1 vs 1 Bot (Medium Easy)' },
+    { level: 4, opponents: 2, difficulty: 'easy', description: '1 vs 2 Bots (Easy)' },
+    { level: 5, opponents: 2, difficulty: 'medium', description: '1 vs 2 Bots (Medium)' },
+    { level: 6, opponents: 2, difficulty: 'hard', description: '1 vs 2 Bots (Hard)' },
+    { level: 7, opponents: 3, difficulty: 'easy', description: '1 vs 3 Bots (Easy)' },
+    { level: 8, opponents: 3, difficulty: 'medium', description: '1 vs 3 Bots (Medium)' },
+    { level: 9, opponents: 3, difficulty: 'hard', description: '1 vs 3 Bots (Hard)' },
+    { level: 10, opponents: 4, difficulty: 'hard', description: 'BOSS: 1 vs 4 Bots (All Hard)' }
+];
+
+// Extended AI configs for career mode
+const CAREER_AI_CONFIG = {
+    belowEasy: {
+        reactionTime: 700,
+        accuracy: 0.35,
+        speed: 0.5,
+        jumpChance: 0.15,
+        kickRange: 70
+    },
+    mediumEasy: {
+        reactionTime: 400,
+        accuracy: 0.6,
+        speed: 0.7,
+        jumpChance: 0.3,
+        kickRange: 85
+    }
+};
+
 // ==================== MENU SCENE ====================
 class MenuScene extends Phaser.Scene {
     constructor() {
@@ -67,7 +149,7 @@ class MenuScene extends Phaser.Scene {
         this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
 
         // Title
-        this.add.text(600, 120, 'HEAD FOOTBALL', {
+        this.add.text(600, 100, 'HEAD FOOTBALL', {
             fontSize: '64px',
             fontFamily: 'Arial Black',
             color: '#ffffff',
@@ -75,8 +157,8 @@ class MenuScene extends Phaser.Scene {
             strokeThickness: 8
         }).setOrigin(0.5);
 
-        // Subtitle - FIRST 2v2 Mode!
-        this.add.text(600, 180, '⚡ NOW WITH 2v2 MODE! ⚡', {
+        // Subtitle - NOW WITH CAREER MODE!
+        this.add.text(600, 160, '⚡ CAREER MODE & 2v2 AVAILABLE! ⚡', {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#ffff00',
@@ -85,12 +167,17 @@ class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Create main menu buttons
-        this.createButton(600, 280, 350, 70, 0x4CAF50, '1v1 MODE', () => {
+        this.createButton(600, 250, 350, 70, 0x9C27B0, 'CAREER MODE', () => {
+            console.log('Opening Career Mode');
+            this.scene.start('CareerMenuScene');
+        });
+
+        this.createButton(600, 340, 350, 70, 0x4CAF50, '1v1 MODE', () => {
             console.log('Opening 1v1 mode selection');
             this.scene.start('Mode1v1Scene');
         });
 
-        this.createButton(600, 370, 350, 70, 0xFF6B00, '2v2 MODE', () => {
+        this.createButton(600, 430, 350, 70, 0xFF6B00, '2v2 MODE', () => {
             console.log('Opening 2v2 mode selection');
             this.scene.start('Mode2v2Scene');
         });
@@ -466,6 +553,360 @@ class DifficultyHardcoreScene extends Phaser.Scene {
     }
 }
 
+// ==================== CAREER MENU SCENE ====================
+class CareerMenuScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'CareerMenuScene' });
+    }
+
+    create() {
+        // Background
+        this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
+
+        // Get career progress
+        const progress = CareerManager.getProgress();
+
+        // Title
+        this.add.text(600, 50, 'CAREER MODE', {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        // Progress indicator
+        const completedCount = progress.completedLevels.length;
+        this.add.text(600, 100, `Progress: ${completedCount}/10 Levels Completed`, {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: completedCount === 10 ? '#00ff00' : '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        // Create level buttons in a grid
+        let buttonIndex = 0;
+        for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 5; col++) {
+                buttonIndex++;
+                const levelNum = buttonIndex;
+                const levelConfig = CAREER_LEVELS[levelNum - 1];
+
+                const x = 300 + col * 150;
+                const y = 200 + row * 120;
+
+                const isUnlocked = CareerManager.isLevelUnlocked(levelNum);
+                const isCompleted = CareerManager.isLevelCompleted(levelNum);
+
+                // Level button color
+                let buttonColor;
+                if (isCompleted) {
+                    buttonColor = 0x4CAF50; // Green for completed
+                } else if (isUnlocked) {
+                    buttonColor = levelNum === 10 ? 0xFF0000 : 0x2196F3; // Red for boss, blue for unlocked
+                } else {
+                    buttonColor = 0x666666; // Gray for locked
+                }
+
+                const button = this.add.rectangle(x, y, 120, 80, buttonColor);
+
+                // Level number
+                this.add.text(x, y - 10, `LEVEL ${levelNum}`, {
+                    fontSize: '18px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }).setOrigin(0.5);
+
+                // Level description (smaller text)
+                const description = levelConfig.description.split('(')[1].replace(')', '');
+                this.add.text(x, y + 15, description, {
+                    fontSize: '11px',
+                    fontFamily: 'Arial',
+                    color: '#ffffff',
+                    stroke: '#000000',
+                    strokeThickness: 1
+                }).setOrigin(0.5);
+
+                // Status icon
+                if (isCompleted) {
+                    this.add.text(x, y - 30, '✓', {
+                        fontSize: '24px',
+                        fontFamily: 'Arial',
+                        color: '#00ff00'
+                    }).setOrigin(0.5);
+                } else if (!isUnlocked) {
+                    this.add.text(x, y - 30, '🔒', {
+                        fontSize: '20px',
+                        fontFamily: 'Arial'
+                    }).setOrigin(0.5);
+                }
+
+                // Make button interactive only if unlocked
+                if (isUnlocked) {
+                    button.setInteractive({ useHandCursor: true });
+
+                    button.on('pointerover', () => {
+                        button.setFillStyle(Phaser.Display.Color.GetColor32(
+                            Math.min(255, ((buttonColor >> 16) & 0xFF) + 30),
+                            Math.min(255, ((buttonColor >> 8) & 0xFF) + 30),
+                            Math.min(255, (buttonColor & 0xFF) + 30),
+                            255
+                        ));
+                    });
+
+                    button.on('pointerout', () => {
+                        button.setFillStyle(buttonColor);
+                    });
+
+                    button.on('pointerdown', () => {
+                        console.log(`Starting career level ${levelNum}`);
+                        this.startCareerLevel(levelNum);
+                    });
+                }
+            }
+        }
+
+        // Reset Progress button
+        this.createButton(300, 520, 200, 50, 0xf44336, 'RESET PROGRESS', () => {
+            if (confirm('Are you sure you want to reset all career progress?')) {
+                CareerManager.resetProgress();
+                this.scene.restart();
+            }
+        });
+
+        // Back button
+        this.createButton(900, 520, 200, 50, 0x666666, 'BACK', () => {
+            this.scene.start('MenuScene');
+        });
+
+        // Legend
+        this.add.text(600, 420, 'Legend:', {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5);
+
+        this.add.text(600, 445, '🔒 Locked  |  Blue: Available  |  Green: Completed  |  Red: Boss Level', {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+    }
+
+    startCareerLevel(levelNum) {
+        const levelConfig = CAREER_LEVELS[levelNum - 1];
+
+        // Determine difficulty based on level config
+        let difficulty = levelConfig.difficulty;
+
+        // Map custom difficulties to standard ones if needed
+        if (difficulty === 'belowEasy') {
+            difficulty = 'easy';
+        } else if (difficulty === 'mediumEasy') {
+            difficulty = 'medium';
+        }
+
+        // Start the game with career mode parameters
+        this.scene.start('GameScene', {
+            mode: 'career',
+            careerLevel: levelNum,
+            botCount: levelConfig.opponents,
+            difficulty: difficulty,
+            customAIConfig: CAREER_AI_CONFIG[levelConfig.difficulty] || AI_CONFIG[difficulty]
+        });
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
+// ==================== VICTORY SCENE (Career Mode) ====================
+class VictoryScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'VictoryScene' });
+    }
+
+    init(data) {
+        this.careerLevel = data.careerLevel;
+        this.playerScore = data.playerScore;
+        this.botScore = data.botScore;
+        this.victory = data.victory;
+    }
+
+    create() {
+        // Background
+        this.add.rectangle(600, 325, 1200, 650, this.victory ? 0x4CAF50 : 0xf44336);
+
+        // Result title
+        const resultText = this.victory ? 'VICTORY!' : 'DEFEAT';
+        const resultColor = this.victory ? '#00ff00' : '#ff0000';
+
+        this.add.text(600, 150, resultText, {
+            fontSize: '72px',
+            fontFamily: 'Arial Black',
+            color: resultColor,
+            stroke: '#000000',
+            strokeThickness: 8
+        }).setOrigin(0.5);
+
+        // Level info
+        this.add.text(600, 230, `Level ${this.careerLevel}`, {
+            fontSize: '32px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        }).setOrigin(0.5);
+
+        // Score
+        this.add.text(600, 280, `Final Score: ${this.playerScore} - ${this.botScore}`, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        if (this.victory) {
+            // Update progress
+            const progress = CareerManager.completeLevel(this.careerLevel);
+
+            // Show progress
+            this.add.text(600, 340, `Career Progress: ${progress.completedLevels.length}/10`, {
+                fontSize: '24px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0.5);
+
+            if (this.careerLevel === 10) {
+                // Beat the final boss!
+                this.add.text(600, 390, '🏆 CONGRATULATIONS! YOU COMPLETED THE CAREER MODE! 🏆', {
+                    fontSize: '24px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffff00',
+                    stroke: '#ff0000',
+                    strokeThickness: 4
+                }).setOrigin(0.5);
+
+                this.createButton(600, 460, 250, 60, 0x2196F3, 'BACK TO MENU', () => {
+                    this.scene.start('CareerMenuScene');
+                });
+            } else if (this.careerLevel < 10) {
+                // Next level button
+                this.createButton(400, 440, 200, 60, 0x4CAF50, 'NEXT LEVEL', () => {
+                    const nextLevel = this.careerLevel + 1;
+                    const levelConfig = CAREER_LEVELS[nextLevel - 1];
+                    let difficulty = levelConfig.difficulty;
+
+                    if (difficulty === 'belowEasy') {
+                        difficulty = 'easy';
+                    } else if (difficulty === 'mediumEasy') {
+                        difficulty = 'medium';
+                    }
+
+                    this.scene.start('GameScene', {
+                        mode: 'career',
+                        careerLevel: nextLevel,
+                        botCount: levelConfig.opponents,
+                        difficulty: difficulty,
+                        customAIConfig: CAREER_AI_CONFIG[levelConfig.difficulty] || AI_CONFIG[difficulty]
+                    });
+                });
+
+                this.createButton(800, 440, 200, 60, 0x2196F3, 'LEVEL SELECT', () => {
+                    this.scene.start('CareerMenuScene');
+                });
+            }
+        } else {
+            // Defeat - retry options
+            this.createButton(400, 440, 200, 60, 0xFF9800, 'RETRY', () => {
+                const levelConfig = CAREER_LEVELS[this.careerLevel - 1];
+                let difficulty = levelConfig.difficulty;
+
+                if (difficulty === 'belowEasy') {
+                    difficulty = 'easy';
+                } else if (difficulty === 'mediumEasy') {
+                    difficulty = 'medium';
+                }
+
+                this.scene.start('GameScene', {
+                    mode: 'career',
+                    careerLevel: this.careerLevel,
+                    botCount: levelConfig.opponents,
+                    difficulty: difficulty,
+                    customAIConfig: CAREER_AI_CONFIG[levelConfig.difficulty] || AI_CONFIG[difficulty]
+                });
+            });
+
+            this.createButton(800, 440, 200, 60, 0x666666, 'LEVEL SELECT', () => {
+                this.scene.start('CareerMenuScene');
+            });
+        }
+    }
+
+    createButton(x, y, width, height, color, text, callback) {
+        const button = this.add.rectangle(x, y, width, height, color);
+        button.setInteractive({ useHandCursor: true });
+
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        button.on('pointerover', () => {
+            button.setFillStyle(Phaser.Display.Color.GetColor32(
+                Math.min(255, ((color >> 16) & 0xFF) + 30),
+                Math.min(255, ((color >> 8) & 0xFF) + 30),
+                Math.min(255, (color & 0xFF) + 30),
+                255
+            ));
+        });
+
+        button.on('pointerout', () => {
+            button.setFillStyle(color);
+        });
+
+        button.on('pointerdown', callback);
+
+        return { button, text: buttonText };
+    }
+}
+
 // ==================== DIFFICULTY SCENE ====================
 class DifficultyScene extends Phaser.Scene {
     constructor() {
@@ -670,20 +1111,29 @@ class GameScene extends Phaser.Scene {
         this.gameMode = data.mode || 'pvp';
         this.subMode = data.subMode || '';  // 4players, bots, hardcore
         this.difficulty = data.difficulty || 'medium';
-        this.aiConfig = AI_CONFIG[this.difficulty];
+
+        // Career mode specific data
+        this.careerLevel = data.careerLevel || null;
+        this.botCount = data.botCount || 1;  // Number of bots for career mode
+
+        // Use custom AI config if provided (for career mode special difficulties)
+        this.aiConfig = data.customAIConfig || AI_CONFIG[this.difficulty];
+
         this.aiTimer = 0;
         // Initialize kick animation states for all players
         this.player1Kicking = false;
         this.player2Kicking = false;
         this.player3Kicking = false;
         this.player4Kicking = false;
+        this.player5Kicking = false;  // For career mode boss level
         // AI timers for bots
         this.aiTimers = {
             player2: 0,
             player3: 0,
-            player4: 0
+            player4: 0,
+            player5: 0  // For career mode 1v4
         };
-        console.log(`Game initialized: mode=${this.gameMode}, subMode=${this.subMode}, difficulty=${this.difficulty}`);
+        console.log(`Game initialized: mode=${this.gameMode}, subMode=${this.subMode}, difficulty=${this.difficulty}, careerLevel=${this.careerLevel}, botCount=${this.botCount}`);
     }
 
     preload() {
@@ -868,7 +1318,145 @@ class GameScene extends Phaser.Scene {
     }
 
     createPlayers() {
-        if (this.gameMode === '2v2') {
+        if (this.gameMode === 'career') {
+            // CAREER MODE - Variable number of bots
+            // Player 1 is always the human player on the left
+            this.player1 = this.physics.add.sprite(200, 450, 'player1');
+            this.player1.setBounce(0.2);
+            this.player1.setCollideWorldBounds(true);
+            this.player1.setScale(1.5);
+
+            // Player 1 leg (for kicking animation)
+            this.player1Leg = this.add.rectangle(200, 470, 4, 25, 0xff0000);
+            this.player1Leg.setOrigin(0.5, 0);
+            this.player1LegFoot = this.physics.add.sprite(200, 495, null);
+            this.player1LegFoot.setSize(10, 10);
+            this.player1LegFoot.body.allowGravity = false;
+            this.player1LegFoot.setVisible(false);
+
+            // Add name labels
+            this.add.text(200, 400, 'YOU', {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: '#ff0000'
+            }).setOrigin(0.5);
+
+            // Create bots based on botCount
+            this.bots = [];  // Array to store all bots for easier management
+
+            if (this.botCount >= 1) {
+                // Bot 1 (Blue - main opponent)
+                this.player2 = this.physics.add.sprite(1000, 450, 'player2');
+                this.player2.setBounce(0.2);
+                this.player2.setCollideWorldBounds(true);
+                this.player2.setScale(1.5);
+                this.player2.isBot = true;
+                this.bots.push(this.player2);
+
+                this.player2Leg = this.add.rectangle(1000, 470, 4, 25, 0x0000ff);
+                this.player2Leg.setOrigin(0.5, 0);
+                this.player2LegFoot = this.physics.add.sprite(1000, 495, null);
+                this.player2LegFoot.setSize(10, 10);
+                this.player2LegFoot.body.allowGravity = false;
+                this.player2LegFoot.setVisible(false);
+
+                this.add.text(1000, 400, 'BOT 1', {
+                    fontSize: '16px',
+                    fontFamily: 'Arial',
+                    color: '#0000ff'
+                }).setOrigin(0.5);
+            }
+
+            if (this.botCount >= 2) {
+                // Bot 2 (Green - secondary opponent)
+                this.player3 = this.physics.add.sprite(850, 480, 'player3');
+                this.player3.setBounce(0.2);
+                this.player3.setCollideWorldBounds(true);
+                this.player3.setScale(1.5);
+                this.player3.isBot = true;
+                this.bots.push(this.player3);
+
+                this.player3Leg = this.add.rectangle(850, 500, 4, 25, 0x00ff00);
+                this.player3Leg.setOrigin(0.5, 0);
+                this.player3LegFoot = this.physics.add.sprite(850, 525, null);
+                this.player3LegFoot.setSize(10, 10);
+                this.player3LegFoot.body.allowGravity = false;
+                this.player3LegFoot.setVisible(false);
+
+                this.add.text(850, 440, 'BOT 2', {
+                    fontSize: '16px',
+                    fontFamily: 'Arial',
+                    color: '#00ff00'
+                }).setOrigin(0.5);
+            }
+
+            if (this.botCount >= 3) {
+                // Bot 3 (Yellow - third opponent)
+                this.player4 = this.physics.add.sprite(900, 420, 'player4');
+                this.player4.setBounce(0.2);
+                this.player4.setCollideWorldBounds(true);
+                this.player4.setScale(1.5);
+                this.player4.isBot = true;
+                this.bots.push(this.player4);
+
+                this.player4Leg = this.add.rectangle(900, 440, 4, 25, 0xffff00);
+                this.player4Leg.setOrigin(0.5, 0);
+                this.player4LegFoot = this.physics.add.sprite(900, 465, null);
+                this.player4LegFoot.setSize(10, 10);
+                this.player4LegFoot.body.allowGravity = false;
+                this.player4LegFoot.setVisible(false);
+
+                this.add.text(900, 380, 'BOT 3', {
+                    fontSize: '16px',
+                    fontFamily: 'Arial',
+                    color: '#ffff00'
+                }).setOrigin(0.5);
+            }
+
+            if (this.botCount >= 4) {
+                // Bot 4 (Orange - fourth opponent for boss level)
+                // Create orange texture if it doesn't exist
+                if (!this.textures.exists('player5')) {
+                    const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+                    graphics.fillStyle(0xff8800, 1);
+                    graphics.fillCircle(20, 20, 20);
+                    graphics.lineStyle(4, 0xff8800);
+                    graphics.strokeCircle(20, 20, 20);
+                    graphics.generateTexture('player5', 40, 40);
+                    graphics.destroy();
+                }
+
+                this.player5 = this.physics.add.sprite(950, 500, 'player5');
+                this.player5.setBounce(0.2);
+                this.player5.setCollideWorldBounds(true);
+                this.player5.setScale(1.5);
+                this.player5.isBot = true;
+                this.bots.push(this.player5);
+
+                this.player5Leg = this.add.rectangle(950, 520, 4, 25, 0xff8800);
+                this.player5Leg.setOrigin(0.5, 0);
+                this.player5LegFoot = this.physics.add.sprite(950, 545, null);
+                this.player5LegFoot.setSize(10, 10);
+                this.player5LegFoot.body.allowGravity = false;
+                this.player5LegFoot.setVisible(false);
+
+                this.add.text(950, 460, 'BOSS', {
+                    fontSize: '16px',
+                    fontFamily: 'Arial Black',
+                    color: '#ff8800'
+                }).setOrigin(0.5);
+            }
+
+            // Add career level indicator
+            this.add.text(600, 30, `CAREER - LEVEL ${this.careerLevel}`, {
+                fontSize: '24px',
+                fontFamily: 'Arial Black',
+                color: '#ffff00',
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0.5);
+
+        } else if (this.gameMode === '2v2') {
             // 2v2 MODE - Create 4 players
             // Team 1 (Left side)
             // Player 1 (Red)
@@ -1250,8 +1838,86 @@ class GameScene extends Phaser.Scene {
             }
         });
 
+        // Career mode additional collisions
+        if (this.gameMode === 'career') {
+            // Add collisions for all bots
+            if (this.player3) {
+                this.physics.add.collider(this.player3, this.ground);
+                this.physics.add.collider(this.player3, this.leftWall);
+                this.physics.add.collider(this.player3, this.rightWall);
+                this.physics.add.collider(this.player1, this.player3, () => {
+                    this.handlePlayerCollision(this.player1, this.player3);
+                });
+                this.physics.add.collider(this.player2, this.player3, () => {
+                    this.handlePlayerCollision(this.player2, this.player3);
+                });
+                this.physics.add.collider(this.ball, this.player3, () => {
+                    this.handleBallHit(this.player3);
+                });
+                this.physics.add.overlap(this.ball, this.player3LegFoot, () => {
+                    if (this.player3Kicking) {
+                        this.performKick(this.player3, true);
+                    }
+                });
+            }
+
+            if (this.player4) {
+                this.physics.add.collider(this.player4, this.ground);
+                this.physics.add.collider(this.player4, this.leftWall);
+                this.physics.add.collider(this.player4, this.rightWall);
+                this.physics.add.collider(this.player1, this.player4, () => {
+                    this.handlePlayerCollision(this.player1, this.player4);
+                });
+                this.physics.add.collider(this.player2, this.player4, () => {
+                    this.handlePlayerCollision(this.player2, this.player4);
+                });
+                if (this.player3) {
+                    this.physics.add.collider(this.player3, this.player4, () => {
+                        this.handlePlayerCollision(this.player3, this.player4);
+                    });
+                }
+                this.physics.add.collider(this.ball, this.player4, () => {
+                    this.handleBallHit(this.player4);
+                });
+                this.physics.add.overlap(this.ball, this.player4LegFoot, () => {
+                    if (this.player4Kicking) {
+                        this.performKick(this.player4, true);
+                    }
+                });
+            }
+
+            if (this.player5) {
+                this.physics.add.collider(this.player5, this.ground);
+                this.physics.add.collider(this.player5, this.leftWall);
+                this.physics.add.collider(this.player5, this.rightWall);
+                this.physics.add.collider(this.player1, this.player5, () => {
+                    this.handlePlayerCollision(this.player1, this.player5);
+                });
+                this.physics.add.collider(this.player2, this.player5, () => {
+                    this.handlePlayerCollision(this.player2, this.player5);
+                });
+                if (this.player3) {
+                    this.physics.add.collider(this.player3, this.player5, () => {
+                        this.handlePlayerCollision(this.player3, this.player5);
+                    });
+                }
+                if (this.player4) {
+                    this.physics.add.collider(this.player4, this.player5, () => {
+                        this.handlePlayerCollision(this.player4, this.player5);
+                    });
+                }
+                this.physics.add.collider(this.ball, this.player5, () => {
+                    this.handleBallHit(this.player5);
+                });
+                this.physics.add.overlap(this.ball, this.player5LegFoot, () => {
+                    if (this.player5Kicking) {
+                        this.performKick(this.player5, true);
+                    }
+                });
+            }
+        }
         // 2v2 mode additional collisions
-        if (this.gameMode === '2v2') {
+        else if (this.gameMode === '2v2') {
             // Player 3 collisions
             this.physics.add.collider(this.player3, this.ground);
             this.physics.add.collider(this.player3, this.leftWall);
@@ -1444,14 +2110,30 @@ class GameScene extends Phaser.Scene {
     endMatch() {
         this.matchEnded = true;
 
-        // Transition to game over scene
-        this.time.delayedCall(1000, () => {
-            this.scene.start('GameOverScene', {
-                score1: this.score1,
-                score2: this.score2,
-                mode: this.gameMode
+        // Handle career mode differently
+        if (this.gameMode === 'career') {
+            // Determine if player won
+            const victory = this.score1 > this.score2;
+
+            // Transition to victory scene for career mode
+            this.time.delayedCall(1000, () => {
+                this.scene.start('VictoryScene', {
+                    careerLevel: this.careerLevel,
+                    playerScore: this.score1,
+                    botScore: this.score2,
+                    victory: victory
+                });
             });
-        });
+        } else {
+            // Normal game over for other modes
+            this.time.delayedCall(1000, () => {
+                this.scene.start('GameOverScene', {
+                    score1: this.score1,
+                    score2: this.score2,
+                    mode: this.gameMode
+                });
+            });
+        }
     }
 
     updateBot(delta, player, playerNum) {
@@ -1586,7 +2268,16 @@ class GameScene extends Phaser.Scene {
     update(time, delta) {
         if (this.matchEnded || this.goalScored) return;
 
-        if (this.gameMode === '2v2') {
+        if (this.gameMode === 'career') {
+            // CAREER MODE - Player 1 is human, others are bots
+            this.handlePlayerControls(this.player1, this.keys1, 1);
+
+            // Update all bots based on botCount
+            if (this.player2) this.updateCareerBot(delta, this.player2, 2);
+            if (this.player3) this.updateCareerBot(delta, this.player3, 3);
+            if (this.player4) this.updateCareerBot(delta, this.player4, 4);
+            if (this.player5) this.updateCareerBot(delta, this.player5, 5);
+        } else if (this.gameMode === '2v2') {
             // 2v2 MODE
             // Player 1 is always human
             this.handlePlayerControls(this.player1, this.keys1, 1);
@@ -1630,6 +2321,112 @@ class GameScene extends Phaser.Scene {
             const scale = 800 / ballSpeed;
             this.ball.body.velocity.x *= scale;
             this.ball.body.velocity.y *= scale;
+        }
+    }
+
+    updateCareerBot(delta, bot, playerNum) {
+        // Career mode bot AI - simpler than 2v2 team-based AI
+        if (this.matchEnded || this.goalScored) return;
+
+        const timerKey = `player${playerNum}`;
+        this.aiTimers[timerKey] += delta;
+        if (this.aiTimers[timerKey] < this.aiConfig.reactionTime) return;
+        this.aiTimers[timerKey] = 0;
+
+        const ball = this.ball;
+        const ai = this.aiConfig;
+        const kickingKey = `player${playerNum}Kicking`;
+        const legKey = `player${playerNum}Leg`;
+        const legFootKey = `player${playerNum}LegFoot`;
+
+        // Calculate distances
+        const distToBall = Phaser.Math.Distance.Between(bot.x, bot.y, ball.x, ball.y);
+        const distToGoal = Math.abs(bot.x - 40);  // Distance to player's goal
+
+        // Career mode bots are all against the player, so they defend the right goal
+        let targetX = ball.x;
+
+        // Coordinate with other bots for better coverage
+        if (this.botCount > 1) {
+            // Spread out bots when multiple are present
+            const botIndex = playerNum - 2;  // 0, 1, 2, 3
+            const spacing = 150;
+
+            // When ball is on left side (player's side)
+            if (ball.x < 600) {
+                // Push forward but maintain formation
+                targetX = Math.min(ball.x + botIndex * spacing, 1000 - botIndex * 50);
+            } else {
+                // Defensive positioning
+                targetX = 900 - botIndex * spacing/2;
+            }
+        } else {
+            // Single bot behavior (levels 1-3)
+            if (ball.x < 600) {
+                targetX = ball.x + 100;  // Chase ball
+            } else {
+                targetX = 900;  // Stay defensive
+            }
+        }
+
+        // Move towards target
+        const moveSpeed = PLAYER_SPEED * ai.speed;
+
+        if (Math.random() < ai.accuracy) {
+            if (bot.x < targetX - 30) {
+                bot.body.setVelocityX(moveSpeed);
+            } else if (bot.x > targetX + 30) {
+                bot.body.setVelocityX(-moveSpeed);
+            } else {
+                bot.body.setVelocityX(0);
+            }
+        }
+
+        // Jump if ball is high
+        if (ball.y < bot.y - 50 && distToBall < 150 && bot.body.touching.down) {
+            if (Math.random() < ai.jumpChance) {
+                bot.body.setVelocityY(JUMP_POWER);
+            }
+        }
+
+        // Kick if ball is close
+        if (distToBall < ai.kickRange && !this[kickingKey]) {
+            this[kickingKey] = true;
+
+            // Calculate kick angle towards player's goal
+            const kickAngle = Math.atan2(GOAL_Y - bot.y, 40 - bot.x);
+
+            // Calculate leg end position
+            const legEndX = bot.x + Math.cos(kickAngle) * LEG_REACH;
+            const legEndY = bot.y + Math.sin(kickAngle) * LEG_REACH;
+
+            // Position leg foot at kick position
+            this[legFootKey].x = legEndX;
+            this[legFootKey].y = legEndY;
+
+            // Animate leg
+            this.tweens.add({
+                targets: this[legKey],
+                rotation: kickAngle,
+                duration: KICK_ANIMATION_TIME / 2,
+                ease: 'Power2',
+                yoyo: true,
+                onComplete: () => {
+                    this[kickingKey] = false;
+                }
+            });
+
+            // Check if ball is in kick range
+            if (distToBall < 80) {
+                this.performKick(bot, false);
+            }
+        } else {
+            // Reset leg position when not kicking
+            this[legKey].x = bot.x;
+            this[legKey].y = bot.y + 20;
+            this[legKey].rotation = 0;
+            this[legFootKey].x = bot.x;
+            this[legFootKey].y = bot.y + 45;
         }
     }
 
@@ -1804,6 +2601,8 @@ const config = {
         MenuScene,
         Mode1v1Scene,
         Mode2v2Scene,
+        CareerMenuScene,
+        VictoryScene,
         DifficultyScene,
         Difficulty2v2Scene,
         DifficultyHardcoreScene,
