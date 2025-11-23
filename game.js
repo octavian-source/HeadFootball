@@ -477,21 +477,13 @@ class GameScene extends Phaser.Scene {
         const topY = leftPostY - GOAL_HEIGHT / 2;
         const bottomY = GROUND_Y;
 
-        // Left goal - left post
-        this.leftGoalLeftPost = this.physics.add.staticGroup();
-        const leftPost1 = this.leftGoalLeftPost.create(leftGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        leftPost1.setSize(postWidth, bottomY - topY);
-        leftPost1.refreshBody();
+        // Left goal - left post (VISUAL ONLY - no hitbox)
         this.add.rectangle(leftGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
 
-        // Left goal - right post
-        this.leftGoalRightPost = this.physics.add.staticGroup();
-        const leftPost2 = this.leftGoalRightPost.create(leftGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        leftPost2.setSize(postWidth, bottomY - topY);
-        leftPost2.refreshBody();
+        // Left goal - right post (VISUAL ONLY - no hitbox)
         this.add.rectangle(leftGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
 
-        // Left goal - crossbar
+        // Left goal - crossbar (WITH HITBOX)
         this.leftGoalCrossbar = this.physics.add.staticGroup();
         const leftCrossbar = this.leftGoalCrossbar.create(leftGoalX, topY, null);
         leftCrossbar.setSize(GOAL_WIDTH + postWidth, postWidth);
@@ -501,21 +493,13 @@ class GameScene extends Phaser.Scene {
         // Right goal posts
         const rightGoalX = 1160;
 
-        // Right goal - left post
-        this.rightGoalLeftPost = this.physics.add.staticGroup();
-        const rightPost1 = this.rightGoalLeftPost.create(rightGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        rightPost1.setSize(postWidth, bottomY - topY);
-        rightPost1.refreshBody();
+        // Right goal - left post (VISUAL ONLY - no hitbox)
         this.add.rectangle(rightGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
 
-        // Right goal - right post
-        this.rightGoalRightPost = this.physics.add.staticGroup();
-        const rightPost2 = this.rightGoalRightPost.create(rightGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        rightPost2.setSize(postWidth, bottomY - topY);
-        rightPost2.refreshBody();
+        // Right goal - right post (VISUAL ONLY - no hitbox)
         this.add.rectangle(rightGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
 
-        // Right goal - crossbar
+        // Right goal - crossbar (WITH HITBOX)
         this.rightGoalCrossbar = this.physics.add.staticGroup();
         const rightCrossbar = this.rightGoalCrossbar.create(rightGoalX, topY, null);
         rightCrossbar.setSize(GOAL_WIDTH + postWidth, postWidth);
@@ -679,12 +663,8 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.ball, this.leftWall);
         this.physics.add.collider(this.ball, this.rightWall);
 
-        // Ball-goalpost collisions (with bounce)
-        this.physics.add.collider(this.ball, this.leftGoalLeftPost);
-        this.physics.add.collider(this.ball, this.leftGoalRightPost);
+        // Ball-goalpost collisions (only crossbars have hitbox)
         this.physics.add.collider(this.ball, this.leftGoalCrossbar);
-        this.physics.add.collider(this.ball, this.rightGoalLeftPost);
-        this.physics.add.collider(this.ball, this.rightGoalRightPost);
         this.physics.add.collider(this.ball, this.rightGoalCrossbar);
 
         // Player collisions
