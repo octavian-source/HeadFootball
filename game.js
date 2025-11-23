@@ -302,25 +302,25 @@ class GameScene extends Phaser.Scene {
         this.add.rectangle(600, 325, 1200, 650, 0x87CEEB);
         this.add.rectangle(600, 585, 1200, 130, 0x3a7d3a);
 
-        this.ground = this.physics.add.staticImage(600, GROUND_Y, null);
-        this.ground.setSize(1200, 20);
-        this.ground.setVisible(false);
+        // Ground - use zone instead of null texture
+        this.ground = this.add.zone(600, GROUND_Y, 1200, 20);
+        this.physics.world.enable(this.ground, Phaser.Physics.Arcade.STATIC_BODY);
 
-        this.leftWall = this.physics.add.staticImage(-5, 325, null);
-        this.leftWall.setSize(10, 650);
-        this.leftWall.setVisible(false);
+        // Left wall
+        this.leftWall = this.add.zone(-5, 325, 10, 650);
+        this.physics.world.enable(this.leftWall, Phaser.Physics.Arcade.STATIC_BODY);
 
-        this.rightWall = this.physics.add.staticImage(1205, 325, null);
-        this.rightWall.setSize(10, 650);
-        this.rightWall.setVisible(false);
+        // Right wall
+        this.rightWall = this.add.zone(1205, 325, 10, 650);
+        this.physics.world.enable(this.rightWall, Phaser.Physics.Arcade.STATIC_BODY);
 
-        this.leftGoal = this.physics.add.staticImage(25, GOAL_Y, null);
-        this.leftGoal.setSize(GOAL_WIDTH, GOAL_HEIGHT);
-        this.leftGoal.setVisible(false);
+        // Left goal
+        this.leftGoal = this.add.zone(25, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT);
+        this.physics.world.enable(this.leftGoal, Phaser.Physics.Arcade.STATIC_BODY);
 
-        this.rightGoal = this.physics.add.staticImage(1175, GOAL_Y, null);
-        this.rightGoal.setSize(GOAL_WIDTH, GOAL_HEIGHT);
-        this.rightGoal.setVisible(false);
+        // Right goal
+        this.rightGoal = this.add.zone(1175, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT);
+        this.physics.world.enable(this.rightGoal, Phaser.Physics.Arcade.STATIC_BODY);
 
         // Goal visuals
         this.add.rectangle(25, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
@@ -374,10 +374,12 @@ class GameScene extends Phaser.Scene {
     }
 
     createBall() {
-        this.ball = this.physics.add.sprite(600, 200, null);
-        this.ball.setCircle(BALL_SIZE);
-        this.ball.setBounce(BALL_BOUNCE);
-        this.ball.setCollideWorldBounds(true);
+        // Create ball as a zone with circular physics body
+        this.ball = this.add.zone(600, 200, BALL_SIZE * 2, BALL_SIZE * 2);
+        this.physics.world.enable(this.ball, Phaser.Physics.Arcade.DYNAMIC_BODY);
+        this.ball.body.setCircle(BALL_SIZE);
+        this.ball.body.setBounce(BALL_BOUNCE);
+        this.ball.body.setCollideWorldBounds(true);
         this.ball.body.setMaxVelocity(800);
 
         this.ballGraphics = this.add.graphics();
