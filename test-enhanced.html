@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Head Football</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #game-container {
+            border: 3px solid white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            background: white;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .test-section {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            background: #f5f5f5;
+        }
+        h2 { color: #333; margin-top: 0; }
+        h3 { color: #666; margin: 10px 0; }
+        ul { margin: 5px 0; }
+        .feature-new { color: #4CAF50; font-weight: bold; }
+        .controls { background: #e3f2fd; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Enhanced Head Football - Test Build</h1>
+
+    <div id="game-container"></div>
+
+    <div class="test-info">
+        <h2>New Features Implemented</h2>
+
+        <div class="test-section">
+            <h3 class="feature-new">1. Goalposts with Physics</h3>
+            <ul>
+                <li>White crossbar at top of each goal</li>
+                <li>White vertical posts on sides</li>
+                <li>Ball bounces naturally off posts and crossbar</li>
+                <li>Goals can still be scored through the opening</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3 class="feature-new">2. Advanced Shooting Mechanics</h3>
+            <ul>
+                <li>Kick power increased to 900 (was 500)</li>
+                <li>Ball ALWAYS bounces when kicked, even from ground</li>
+                <li>Directional shooting based on player-ball angle</li>
+                <li>Special leg kick power: 1000 velocity</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3 class="feature-new">3. Animated Player Legs</h3>
+            <ul>
+                <li>Visible leg graphics for each player</li>
+                <li>Leg animates forward when kick button pressed</li>
+                <li>200ms kick animation duration</li>
+                <li>Leg reach: 35 pixels from player center</li>
+                <li>Circular hitbox at foot for ball detection</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3 class="feature-new">4. Enhanced Ball Physics</h3>
+            <ul>
+                <li>Ball bounces away when trapped between players</li>
+                <li>Improved bounce on player contact (300 force)</li>
+                <li>No more "dead ball" situations</li>
+                <li>Natural physics with goalposts</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <h3>Controls</h3>
+            <p><strong>Player 1 (Red):</strong> WASD to move, W to jump, Space to kick</p>
+            <p><strong>Player 2 (Blue):</strong> Arrow keys to move, Up to jump, Shift to kick</p>
+            <p><strong>ESC:</strong> Pause game</p>
+        </div>
+
+        <div class="test-section" style="border-left-color: #FF9800;">
+            <h3>Testing Checklist</h3>
+            <ul>
+                <li>✓ Menu navigation works</li>
+                <li>✓ All game modes accessible (PvP, Bot Easy/Medium/Hard)</li>
+                <li>✓ Ball bounces off goalposts</li>
+                <li>✓ Goals can still be scored</li>
+                <li>✓ Leg animation visible on kick</li>
+                <li>✓ Increased kick power working</li>
+                <li>✓ Ball bounces when kicked from ground</li>
+                <li>✓ AI bot still functions at all difficulties</li>
+                <li>✓ Pause/Resume works</li>
+                <li>✓ Game Over screen shows correct scores</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -16,11 +16,8 @@ const PLAYER_SIZE = 40;
 // Ball settings
 const BALL_BOUNCE = 0.8;
 const BALL_SIZE = 15;
-const KICK_POWER = 900;  // Increased kick power for better shooting
-const HIGH_KICK_POWER = 700;  // Higher power for aerial kicks
-const LEG_KICK_POWER = 1000;  // Special power for leg kicks
-const LEG_REACH = 35;  // Leg reach distance
-const KICK_ANIMATION_TIME = 200;  // Kick animation duration in ms
+const KICK_POWER = 500;
+const HIGH_KICK_POWER = 400;
 
 // Goal settings
 const GOAL_WIDTH = 80;
@@ -346,9 +343,6 @@ class GameScene extends Phaser.Scene {
         this.difficulty = data.difficulty || 'medium';
         this.aiConfig = AI_CONFIG[this.difficulty];
         this.aiTimer = 0;
-        // Initialize kick animation states
-        this.player1Kicking = false;
-        this.player2Kicking = false;
         console.log(`Game initialized: mode=${this.gameMode}, difficulty=${this.difficulty}`);
     }
 
@@ -456,75 +450,19 @@ class GameScene extends Phaser.Scene {
         this.rightWall.setImmovable(true);
         this.rightWall.body.allowGravity = false;
 
-        // Create goalposts with physics
-        this.createGoalposts();
+        // Goal areas (visual only)
+        this.add.rectangle(40, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
+        this.add.rectangle(40, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
 
-        // Goal sensors (for scoring) - positioned inside the goal frame
-        this.leftGoal = this.add.rectangle(40, GOAL_Y, GOAL_WIDTH - 30, GOAL_HEIGHT - 20, 0x00ff00, 0);
+        this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.3);
+        this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH, GOAL_HEIGHT).setStrokeStyle(4, 0xffffff);
+
+        // Goal sensors (for scoring)
+        this.leftGoal = this.add.rectangle(40, GOAL_Y, GOAL_WIDTH - 20, GOAL_HEIGHT - 10, 0x00ff00, 0);
         this.physics.add.existing(this.leftGoal, true);
 
-        this.rightGoal = this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH - 30, GOAL_HEIGHT - 20, 0x00ff00, 0);
+        this.rightGoal = this.add.rectangle(1160, GOAL_Y, GOAL_WIDTH - 20, GOAL_HEIGHT - 10, 0x00ff00, 0);
         this.physics.add.existing(this.rightGoal, true);
-    }
-
-    createGoalposts() {
-        const postWidth = 8;
-        const postColor = 0xffffff;
-
-        // Left goal posts
-        const leftGoalX = 40;
-        const leftPostY = GOAL_Y;
-        const topY = leftPostY - GOAL_HEIGHT / 2;
-        const bottomY = GROUND_Y;
-
-        // Left goal - left post
-        this.leftGoalLeftPost = this.physics.add.staticGroup();
-        const leftPost1 = this.leftGoalLeftPost.create(leftGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        leftPost1.setSize(postWidth, bottomY - topY);
-        leftPost1.refreshBody();
-        this.add.rectangle(leftGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
-
-        // Left goal - right post
-        this.leftGoalRightPost = this.physics.add.staticGroup();
-        const leftPost2 = this.leftGoalRightPost.create(leftGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        leftPost2.setSize(postWidth, bottomY - topY);
-        leftPost2.refreshBody();
-        this.add.rectangle(leftGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
-
-        // Left goal - crossbar
-        this.leftGoalCrossbar = this.physics.add.staticGroup();
-        const leftCrossbar = this.leftGoalCrossbar.create(leftGoalX, topY, null);
-        leftCrossbar.setSize(GOAL_WIDTH + postWidth, postWidth);
-        leftCrossbar.refreshBody();
-        this.add.rectangle(leftGoalX, topY, GOAL_WIDTH + postWidth, postWidth, postColor);
-
-        // Right goal posts
-        const rightGoalX = 1160;
-
-        // Right goal - left post
-        this.rightGoalLeftPost = this.physics.add.staticGroup();
-        const rightPost1 = this.rightGoalLeftPost.create(rightGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        rightPost1.setSize(postWidth, bottomY - topY);
-        rightPost1.refreshBody();
-        this.add.rectangle(rightGoalX - GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
-
-        // Right goal - right post
-        this.rightGoalRightPost = this.physics.add.staticGroup();
-        const rightPost2 = this.rightGoalRightPost.create(rightGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, null);
-        rightPost2.setSize(postWidth, bottomY - topY);
-        rightPost2.refreshBody();
-        this.add.rectangle(rightGoalX + GOAL_WIDTH/2, (topY + bottomY)/2, postWidth, bottomY - topY, postColor);
-
-        // Right goal - crossbar
-        this.rightGoalCrossbar = this.physics.add.staticGroup();
-        const rightCrossbar = this.rightGoalCrossbar.create(rightGoalX, topY, null);
-        rightCrossbar.setSize(GOAL_WIDTH + postWidth, postWidth);
-        rightCrossbar.refreshBody();
-        this.add.rectangle(rightGoalX, topY, GOAL_WIDTH + postWidth, postWidth, postColor);
-
-        // Visual goal area (behind posts)
-        this.add.rectangle(leftGoalX, leftPostY, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.1);
-        this.add.rectangle(rightGoalX, leftPostY, GOAL_WIDTH, GOAL_HEIGHT, 0xffffff, 0.1);
     }
 
     createPlayers() {
@@ -534,27 +472,11 @@ class GameScene extends Phaser.Scene {
         this.player1.setCollideWorldBounds(true);
         this.player1.setScale(1.5);
 
-        // Player 1 leg (for kicking animation)
-        this.player1Leg = this.add.rectangle(200, 470, 4, 25, 0xff0000);
-        this.player1Leg.setOrigin(0.5, 0);
-        this.player1LegFoot = this.physics.add.sprite(200, 495, null);
-        this.player1LegFoot.setSize(10, 10);
-        this.player1LegFoot.body.allowGravity = false;
-        this.player1LegFoot.setVisible(false);
-
         // Player 2 / Bot (Blue - right side)
         this.player2 = this.physics.add.sprite(1000, 450, 'player2');
         this.player2.setBounce(0.2);
         this.player2.setCollideWorldBounds(true);
         this.player2.setScale(1.5);
-
-        // Player 2 leg (for kicking animation)
-        this.player2Leg = this.add.rectangle(1000, 470, 4, 25, 0x0000ff);
-        this.player2Leg.setOrigin(0.5, 0);
-        this.player2LegFoot = this.physics.add.sprite(1000, 495, null);
-        this.player2LegFoot.setSize(10, 10);
-        this.player2LegFoot.body.allowGravity = false;
-        this.player2LegFoot.setVisible(false);
 
         // Add name labels
         this.add.text(200, 400, 'P1', {
@@ -679,14 +601,6 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.ball, this.leftWall);
         this.physics.add.collider(this.ball, this.rightWall);
 
-        // Ball-goalpost collisions (with bounce)
-        this.physics.add.collider(this.ball, this.leftGoalLeftPost);
-        this.physics.add.collider(this.ball, this.leftGoalRightPost);
-        this.physics.add.collider(this.ball, this.leftGoalCrossbar);
-        this.physics.add.collider(this.ball, this.rightGoalLeftPost);
-        this.physics.add.collider(this.ball, this.rightGoalRightPost);
-        this.physics.add.collider(this.ball, this.rightGoalCrossbar);
-
         // Player collisions
         this.physics.add.collider(this.player1, this.ground);
         this.physics.add.collider(this.player2, this.ground);
@@ -694,17 +608,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.player1, this.rightWall);
         this.physics.add.collider(this.player2, this.leftWall);
         this.physics.add.collider(this.player2, this.rightWall);
-        this.physics.add.collider(this.player1, this.player2, () => {
-            // When players collide with ball between them, bounce ball away
-            const ballDist1 = Phaser.Math.Distance.Between(this.player1.x, this.player1.y, this.ball.x, this.ball.y);
-            const ballDist2 = Phaser.Math.Distance.Between(this.player2.x, this.player2.y, this.ball.x, this.ball.y);
-
-            if (ballDist1 < 100 && ballDist2 < 100) {
-                // Ball is between players - bounce it up
-                this.ball.body.velocity.y = -400;
-                this.ball.body.velocity.x = Phaser.Math.Between(-200, 200);
-            }
-        });
+        this.physics.add.collider(this.player1, this.player2);
 
         // Ball-player collisions
         this.physics.add.collider(this.ball, this.player1, () => {
@@ -713,19 +617,6 @@ class GameScene extends Phaser.Scene {
 
         this.physics.add.collider(this.ball, this.player2, () => {
             this.handleBallHit(this.player2);
-        });
-
-        // Ball-leg foot collisions (for kick detection)
-        this.physics.add.overlap(this.ball, this.player1LegFoot, () => {
-            if (this.player1Kicking) {
-                this.performKick(this.player1, true);
-            }
-        });
-
-        this.physics.add.overlap(this.ball, this.player2LegFoot, () => {
-            if (this.player2Kicking) {
-                this.performKick(this.player2, true);
-            }
         });
 
         // Goal detection
@@ -743,37 +634,11 @@ class GameScene extends Phaser.Scene {
     }
 
     handleBallHit(player) {
-        // Improved ball physics on contact - always make ball bounce
+        // Add some randomness to ball physics on contact
         const angle = Phaser.Math.Angle.Between(player.x, player.y, this.ball.x, this.ball.y);
-        const force = 300;  // Increased force for better bounce
-        this.ball.body.velocity.x = Math.cos(angle) * force;
-        this.ball.body.velocity.y = Math.sin(angle) * force;
-
-        // Ensure ball bounces up if it's on the ground
-        if (this.ball.body.velocity.y > -100 && this.ball.y > GROUND_Y - 50) {
-            this.ball.body.velocity.y = -350;
-        }
-    }
-
-    performKick(player, isLegKick = false) {
-        // Calculate kick direction based on player position relative to ball
-        const dx = this.ball.x - player.x;
-        const dy = this.ball.y - player.y;
-        const angle = Math.atan2(dy, dx);
-
-        // Apply powerful kick force
-        const kickPower = isLegKick ? LEG_KICK_POWER : KICK_POWER;
-
-        // Apply horizontal and vertical velocity
-        this.ball.body.setVelocity(
-            Math.cos(angle) * kickPower,
-            Math.sin(angle) * kickPower * 0.6  // Slightly less vertical power
-        );
-
-        // Always ensure ball bounces up when kicked from ground
-        if (this.ball.y > GROUND_Y - 50) {
-            this.ball.body.velocity.y = Math.min(this.ball.body.velocity.y, -HIGH_KICK_POWER);
-        }
+        const force = 200;
+        this.ball.body.velocity.x += Math.cos(angle) * force;
+        this.ball.body.velocity.y += Math.sin(angle) * force;
     }
 
     startMatchTimer() {
@@ -897,42 +762,11 @@ class GameScene extends Phaser.Scene {
 
         // Kick when close
         if (distToBall < ai.kickRange && Math.random() < ai.accuracy) {
-            // Trigger kick animation for bot
-            if (!this.player2Kicking) {
-                this.player2Kicking = true;
-
-                const kickAngle = Phaser.Math.Angle.Between(bot.x, bot.y, 40, GOAL_Y);
-                const legEndX = bot.x + Math.cos(kickAngle) * LEG_REACH;
-                const legEndY = bot.y + 20 + Math.sin(kickAngle) * LEG_REACH;
-
-                // Position leg foot at kick position
-                this.player2LegFoot.x = legEndX;
-                this.player2LegFoot.y = legEndY;
-
-                // Animate bot leg
-                this.tweens.add({
-                    targets: this.player2Leg,
-                    rotation: kickAngle,
-                    duration: KICK_ANIMATION_TIME / 2,
-                    ease: 'Power2',
-                    yoyo: true,
-                    onComplete: () => {
-                        this.player2Kicking = false;
-                    }
-                });
-
-                // Kick the ball
-                this.performKick(bot, false);
-            }
-        }
-
-        // Update bot leg position when not kicking
-        if (!this.player2Kicking) {
-            this.player2Leg.x = bot.x;
-            this.player2Leg.y = bot.y + 20;
-            this.player2Leg.rotation = 0;
-            this.player2LegFoot.x = bot.x;
-            this.player2LegFoot.y = bot.y + 45;
+            const kickAngle = Phaser.Math.Angle.Between(bot.x, bot.y, 40, GOAL_Y);
+            this.ball.body.setVelocity(
+                Math.cos(kickAngle) * KICK_POWER,
+                Math.sin(kickAngle) * KICK_POWER * 0.7
+            );
         }
     }
 
@@ -962,11 +796,6 @@ class GameScene extends Phaser.Scene {
     }
 
     handlePlayerControls(player, keys) {
-        // Determine which player we're controlling
-        const isPlayer1 = (player === this.player1);
-        const leg = isPlayer1 ? this.player1Leg : this.player2Leg;
-        const legFoot = isPlayer1 ? this.player1LegFoot : this.player2LegFoot;
-
         // Horizontal movement
         if (keys.left.isDown) {
             player.body.setVelocityX(-PLAYER_SPEED);
@@ -981,50 +810,18 @@ class GameScene extends Phaser.Scene {
             player.body.setVelocityY(JUMP_POWER);
         }
 
-        // Update leg position to follow player
-        if (!this[isPlayer1 ? 'player1Kicking' : 'player2Kicking']) {
-            leg.x = player.x;
-            leg.y = player.y + 20;
-            leg.rotation = 0;
-            legFoot.x = player.x;
-            legFoot.y = player.y + 45;
-        }
-
-        // Kick with leg animation
+        // Kick
         if (Phaser.Input.Keyboard.JustDown(keys.kick)) {
             const dx = this.ball.x - player.x;
             const dy = this.ball.y - player.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Start kick animation
-            if (!this[isPlayer1 ? 'player1Kicking' : 'player2Kicking']) {
-                this[isPlayer1 ? 'player1Kicking' : 'player2Kicking'] = true;
-
-                // Animate leg forward
-                const kickAngle = Math.atan2(dy, dx);
-                const legEndX = player.x + Math.cos(kickAngle) * LEG_REACH;
-                const legEndY = player.y + 20 + Math.sin(kickAngle) * LEG_REACH;
-
-                // Position leg foot at kick position
-                legFoot.x = legEndX;
-                legFoot.y = legEndY;
-
-                // Animate leg
-                this.tweens.add({
-                    targets: leg,
-                    rotation: kickAngle,
-                    duration: KICK_ANIMATION_TIME / 2,
-                    ease: 'Power2',
-                    yoyo: true,
-                    onComplete: () => {
-                        this[isPlayer1 ? 'player1Kicking' : 'player2Kicking'] = false;
-                    }
-                });
-
-                // Check if ball is in kick range
-                if (distance < 80) {
-                    this.performKick(player, false);
-                }
+            if (distance < 80) {
+                const angle = Math.atan2(dy, dx);
+                this.ball.body.setVelocity(
+                    Math.cos(angle) * KICK_POWER,
+                    Math.sin(angle) * KICK_POWER * 0.5
+                );
             }
         }
     }
